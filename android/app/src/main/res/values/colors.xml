@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Design tokens (dark monochrome) -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="canvas_bg">#0E0E10</color>
+    <color name="panel_bg">#1C1C20</color>
+    <color name="app_bg">#0E0E10</color>
+    <color name="statusbar_bg">#252525</color>
+
+    <!-- Text -->
+    <color name="tHi">#F5FFFFFF</color>
+    <color name="tMid">#99FFFFFF</color>
+    <color name="tLo">#66FFFFFF</color>
+    <color name="text_primary">#F5FFFFFF</color>
+    <color name="text_secondary">#99FFFFFF</color>
+    <color name="text_dim">#66FFFFFF</color>
+
+    <!-- Lines -->
+    <color name="hairline">#17FFFFFF</color>
+    <color name="line2">#29FFFFFF</color>
+
+    <!-- Accent -->
+    <color name="accent_white">#FAFAFA</color>
+    <color name="track_fill">#1FFFFFFF</color>
+
+    <!-- Swatches -->
+    <color name="swatch_dark">#16161A</color>
+    <color name="swatch_gray">#8C8C92</color>
+    <color name="swatch_warm">#CAA46F</color>
+    <color name="swatch_white">#FAFAFA</color>
+
+    <!-- Legacy names kept for ColorPickerDialog usage -->
+    <color name="blue_800">#444448</color>
+    <color name="blue_900">#333337</color>
+    <color name="swatch_border">#29FFFFFF</color>
+</resources>

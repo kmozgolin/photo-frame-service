@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@color/canvas_bg">
+
+    <!-- PREVIEW AREA (LEFT, flex:1) -->
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/canvas_bg">
+
+        <com.example.photoframe.ZoomableImageView
+            android:id="@+id/previewImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="30dp"
+            android:contentDescription="Превью" />
+
+        <com.example.photoframe.EyedropperOverlay
+            android:id="@+id/eyedropperOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="30dp"
+            android:visibility="gone" />
+
+        <!-- Dimensions status bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_gravity="bottom"
+            android:background="@color/statusbar_bg"
+            android:paddingHorizontal="14dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/dimensionsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Фото не загружено"
+                android:textSize="11sp"
+                android:textColor="@color/tLo"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- PANEL (RIGHT, fixed 276dp) -->
+    <LinearLayout
+        android:layout_width="276dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/panel_bg"
+        android:padding="14dp">
+
+        <!-- Header: "Рамка" + Upload chip -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Рамка"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/tHi" />
+
+            <!-- Rotate button (visible after image loaded) -->
+            <Button
+                android:id="@+id/btnRotate"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="↻"
+                android:textSize="17sp"
+                android:textColor="@color/tMid"
+                android:background="@drawable/bg_tool_circle"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="0dp"
+                android:paddingVertical="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
+
+            <!-- Upload chip: pill shape, 40dp height -->
+            <Button
+                android:id="@+id/loadButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Загрузить"
+                android:textSize="12sp"
+                android:textColor="@color/tMid"
+                android:background="@drawable/bg_auto_pill"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <!-- "ШИРИНА РАМКИ" label + link status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ШИРИНА РАМКИ"
+                android:textSize="10sp"
+                android:textColor="@color/tLo"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:id="@+id/linkStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="связаны"
+                android:textSize="10sp"
+                android:textColor="@color/tLo"
+                android:fontFamily="monospace" />
+
+        </LinearLayout>
+
+        <!-- SLIDERS AREA (weight=1, fills available height) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- LEFT slider column: ВЕРТИК. -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <!-- Value + px label -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/verticalValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="30"
+                        android:textSize="20sp"
+                        android:textColor="@color/tHi"
+                        android:fontFamily="monospace"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="px"
+                        android:textSize="11sp"
+                        android:textColor="@color/tLo"
+                        android:fontFamily="monospace"
+                        android:layout_marginStart="2dp" />
+
+                </LinearLayout>
+
+                <!-- VerticalSeekBar -->
+                <com.example.photoframe.VerticalSeekBar
+                    android:id="@+id/verticalSeekBar"
+                    android:layout_width="36dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <!-- ВЕРТИК. label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ВЕРТИК."
+                    android:textSize="9.5sp"
+                    android:textColor="@color/tLo"
+                    android:fontFamily="monospace"
+                    android:letterSpacing="0.14"
+                    android:layout_marginTop="6dp" />
+
+            </LinearLayout>
+
+            <!-- Link toggle column (34dp wide) -->
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="match_parent">
+
+                <!-- Vertical line through center -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@color/hairline" />
+
+                <!-- Link button circle -->
+                <Button
+                    android:id="@+id/linkButton"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_gravity="center"
+                    android:text="⛓"
+                    android:textSize="13sp"
+                    android:background="@drawable/bg_link_linked"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingHorizontal="0dp"
+                    android:paddingVertical="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:stateListAnimator="@null"
+                    android:textColor="@color/canvas_bg" />
+
+            </FrameLayout>
+
+            <!-- RIGHT slider column: ГОРИЗ. -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <!-- Value + px label -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/horizontalValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="30"
+                        android:textSize="20sp"
+                        android:textColor="@color/tHi"
+                        android:fontFamily="monospace"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="px"
+                        android:textSize="11sp"
+                        android:textColor="@color/tLo"
+                        android:fontFamily="monospace"
+                        android:layout_marginStart="2dp" />
+
+                </LinearLayout>
+
+                <!-- VerticalSeekBar -->
+                <com.example.photoframe.VerticalSeekBar
+                    android:id="@+id/horizontalSeekBar"
+                    android:layout_width="36dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <!-- ГОРИЗ. label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ГОРИЗ."
+                    android:textSize="9.5sp"
+                    android:textColor="@color/tLo"
+                    android:fontFamily="monospace"
+                    android:letterSpacing="0.14"
+                    android:layout_marginTop="6dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Hairline divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/hairline"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp" />
+
+        <!-- ЦВЕТ row: label + swatch + hex -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ЦВЕТ"
+                android:textSize="10sp"
+                android:textColor="@color/tLo"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.08" />
+
+            <!-- Color swatch 14dp square -->
+            <View
+                android:id="@+id/colorPreviewSwatch"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="6dp"
+                android:background="@color/accent_white" />
+
+            <TextView
+                android:id="@+id/colorHexText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="#FAFAFA"
+                android:textSize="11sp"
+                android:textColor="@color/tMid"
+                android:fontFamily="monospace" />
+
+        </LinearLayout>
+
+        <!-- Tool row: Auto pill + eyedropper circle + color wheel circle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <!-- "Авто" pill -->
+            <Button
+                android:id="@+id/btnAuto"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Авто"
+                android:textSize="12sp"
+                android:textColor="@color/tMid"
+                android:background="@drawable/bg_auto_pill"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Eyedropper circle -->
+            <Button
+                android:id="@+id/btnEyedropper"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="💧"
+                android:textSize="16sp"
+                android:background="@drawable/bg_tool_circle"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="0dp"
+                android:paddingVertical="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Color wheel circle (filled programmatically with SweepGradient) -->
+            <Button
+                android:id="@+id/btnColorWheel"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text=""
+                android:background="@drawable/bg_tool_circle"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="0dp"
+                android:paddingVertical="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <!-- Dropper card: shown when eyedropper is active (replaces swatches) -->
+        <LinearLayout
+            android:id="@+id/dropperCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="6dp"
+            android:background="@drawable/bg_dropper_card"
+            android:visibility="gone"
+            android:layout_marginBottom="10dp">
+
+            <View
+                android:id="@+id/dropperColorSwatch"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_dropper_swatch" />
+
+            <TextView
+                android:id="@+id/dropperHexText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="#------"
+                android:textSize="14sp"
+                android:textColor="@color/tHi"
+                android:fontFamily="monospace"
+                android:textStyle="bold"
+                android:layout_marginStart="10dp" />
+
+            <Button
+                android:id="@+id/btnDropperConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:text="Взять"
+                android:textSize="13sp"
+                android:textColor="#101012"
+                android:background="@drawable/bg_save_button"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+        <!-- Swatches row: 34dp circles -->
+        <LinearLayout
+            android:id="@+id/swatchesRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <!-- Selected/custom color swatch (34dp circle, dynamic color) -->
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp">
+                <!-- Double ring (outer ring) -->
+                <View
+                    android:id="@+id/swatchSelectedRing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_link_unlinked"
+                    android:visibility="visible" />
+                <!-- Inner circle with 3dp inset to show ring gap -->
+                <View
+                    android:id="@+id/swatchSelected"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_swatch_selected" />
+            </FrameLayout>
+
+            <!-- White swatch -->
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp">
+                <View
+                    android:id="@+id/swatchWhiteRing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_link_unlinked"
+                    android:visibility="invisible" />
+                <View
+                    android:id="@+id/swatchWhite"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_link_linked" />
+            </FrameLayout>
+
+            <!-- Dark swatch -->
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp">
+                <View
+                    android:id="@+id/swatchDarkRing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_link_unlinked"
+                    android:visibility="invisible" />
+                <View
+                    android:id="@+id/swatchDark"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_swatch_selected" />
+            </FrameLayout>
+
+            <!-- Gray swatch -->
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp">
+                <View
+                    android:id="@+id/swatchGrayRing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_link_unlinked"
+                    android:visibility="invisible" />
+                <View
+                    android:id="@+id/swatchGray"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_swatch_selected" />
+            </FrameLayout>
+
+            <!-- Warm swatch -->
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp">
+                <View
+                    android:id="@+id/swatchWarmRing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_link_unlinked"
+                    android:visibility="invisible" />
+                <View
+                    android:id="@+id/swatchWarm"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_swatch_selected" />
+            </FrameLayout>
+
+            <!-- Plus swatch (open color picker) -->
+            <View
+                android:id="@+id/swatchPlus"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/bg_swatch_plus" />
+
+        </LinearLayout>
+
+        <!-- Flex spacer -->
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Save button: 48dp, 14dp radius, white bg -->
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Сохранить"
+            android:textSize="14sp"
+            android:textColor="@color/canvas_bg"
+            android:textStyle="bold"
+            android:background="@drawable/bg_save_button"
+            android:enabled="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:stateListAnimator="@null" />
+
+        <!-- Hidden pickColorButton for backward compat with ColorPickerDialog -->
+        <Button
+            android:id="@+id/pickColorButton"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>

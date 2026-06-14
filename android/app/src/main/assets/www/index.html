@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Фото в рамке</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>Сервис рамки для фото</h1>
+        <p class="subtitle">Загрузите картинку из галереи и примените рамку.</p>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="card controls-card">
+        <div class="field">
+          <label for="photoInput">Загрузить фото</label>
+          <input id="photoInput" type="file" accept="image/*" />
+        </div>
+
+        <div class="field">
+          <label for="verticalWidth">Вертикальная ширина рамки</label>
+          <input id="verticalWidth" type="range" min="0" max="200" value="30" />
+          <output id="verticalValue">30</output> px
+        </div>
+
+        <div class="field">
+          <label for="horizontalWidth">Горизонтальная ширина рамки</label>
+          <input id="horizontalWidth" type="range" min="0" max="200" value="30" />
+          <output id="horizontalValue">30</output> px
+        </div>
+
+        <div class="field">
+          <p>Цвет рамки</p>
+          <label><input name="borderColor" type="radio" value="black" checked /> Черный</label>
+          <label><input name="borderColor" type="radio" value="white" /> Белый</label>
+          <label><input name="borderColor" type="radio" value="auto" /> Автоподбор</label>
+        </div>
+
+        <div class="field inline">
+          <button id="pickColorBtn" type="button">Выбрать цвет</button>
+          <input id="customColor" type="color" value="#000000" />
+        </div>
+
+        <div class="field">
+          <button id="applyButton" type="button" class="primary">Применить рамку</button>
+        </div>
+      </section>
+
+      <section class="card preview-card">
+        <h2>Превью</h2>
+        <div class="preview-panel">
+          <canvas id="previewCanvas" aria-label="Превью изображения в рамке"></canvas>
+        </div>
+        <div class="result-block">
+          <button id="downloadButton" type="button" class="secondary" disabled>Скачать результат</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
