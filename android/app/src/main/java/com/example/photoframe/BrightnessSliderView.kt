@@ -18,7 +18,8 @@ class BrightnessSliderView @JvmOverloads constructor(
     var endColor = Color.WHITE
         set(c) { field = c; gradientDirty = true; invalidate() }
 
-    var onValueChanged: ((Float) -> Unit)? = null
+    // (value, isDragging) — matches VerticalSeekBar convention so callers know drag-complete
+    var onValueChanged: ((Float, Boolean) -> Unit)? = null
 
     private val dp = context.resources.displayMetrics.density
     private val trackH = 8f * dp
@@ -66,11 +67,16 @@ class BrightnessSliderView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        val usableW = width - thumbR * 2
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                val usableW = width - thumbR * 2
                 value = ((event.x - thumbR) / usableW).coerceIn(0f, 1f)
-                onValueChanged?.invoke(value)
+                onValueChanged?.invoke(value, true)
+                return true
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                value = ((event.x - thumbR) / usableW).coerceIn(0f, 1f)
+                onValueChanged?.invoke(value, false)
                 return true
             }
         }

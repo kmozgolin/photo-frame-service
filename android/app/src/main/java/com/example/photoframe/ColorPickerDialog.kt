@@ -14,6 +14,8 @@ import androidx.core.graphics.toColorInt
 // Glass popover matching the design:
 // Dark semi-transparent (rgba(20,20,24,0.92)), borderRadius 24dp
 // ColorWheel 150dp + brightness slider + HEX/eyedropper/confirm + "ПО ФОТО" row
+private const val MIN_BRIGHTNESS = 0.15f   // floor below which we treat brightness as "too dark"
+
 class ColorPickerDialog(
     private val context: Context,
     private val initialColor: Int,
@@ -26,7 +28,8 @@ class ColorPickerDialog(
 
     fun show() {
         val dp = context.resources.displayMetrics.density
-        val dialog = Dialog(context, android.R.style.Theme_Translucent_NoTitleBar)
+        val dialog = Dialog(context)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
 
         // Build the glass container
         val root = buildRoot(dp, dialog)
@@ -84,7 +87,7 @@ class ColorPickerDialog(
                 it.bottomMargin = (16 * dp).toInt()
             }
         }
-        currentValue = wheelView.setColor(initialColor).let { if (it < 0.15f) 1f else it }
+        currentValue = wheelView.setColor(initialColor).let { if (it < MIN_BRIGHTNESS) 1f else it }
         root.addView(wheelView)
 
         // ── Brightness slider ─────────────────────────────────────────────────
@@ -203,7 +206,7 @@ class ColorPickerDialog(
                         val hsv = FloatArray(3)
                         Color.colorToHSV(color, hsv)
                         wheelView.setColor(color)
-                        currentValue = hsv[2].let { if (it < 0.15f) 1f else it }
+                        currentValue = hsv[2].let { if (it < MIN_BRIGHTNESS) 1f else it }
                         brightnessSlider.value = currentValue
                         brightnessSlider.endColor = wheelView.getColor(1f)
                         val finalColor = wheelView.getColor(currentValue)
@@ -235,7 +238,7 @@ class ColorPickerDialog(
             brightnessSlider.endColor = wheelView.getColor(1f)
             syncSwatch()
         }
-        brightnessSlider.onValueChanged = { v ->
+        brightnessSlider.onValueChanged = { v, _ ->
             currentValue = v
             syncSwatch()
         }
@@ -246,7 +249,7 @@ class ColorPickerDialog(
                 try {
                     val color = Color.parseColor(s.toString())
                     isUpdating = true
-                    currentValue = wheelView.setColor(color).let { if (it < 0.15f) 1f else it }
+                    currentValue = wheelView.setColor(color).let { if (it < MIN_BRIGHTNESS) 1f else it }
                     brightnessSlider.value = currentValue
                     brightnessSlider.endColor = wheelView.getColor(1f)
                     colorSquare.background = GradientDrawable().apply {
@@ -293,19 +296,23 @@ class ColorPickerDialog(
     private fun extractPhotoColors(): List<Int> {
         val bmp = sourceBitmap ?: return emptyList()
         val scaled = Bitmap.createScaledBitmap(bmp, 100, 100, true)
-        val count = 5
-        val zoneW = 100 / count
-        return (0 until count).map { i ->
-            val sx = i * zoneW
-            var r = 0L; var g = 0L; var b = 0L; var n = 0
-            for (y in 0 until 100) {
-                for (x in sx until minOf(sx + zoneW, 100)) {
-                    val p = scaled.getPixel(x, y)
-                    r += Color.red(p); g += Color.green(p); b += Color.blue(p); n++
+        try {
+            val count = 5
+            val zoneW = 100 / count
+            return (0 until count).map { i ->
+                val sx = i * zoneW
+                var r = 0L; var g = 0L; var b = 0L; var n = 0
+                for (y in 0 until 100) {
+                    for (x in sx until minOf(sx + zoneW, 100)) {
+                        val p = scaled.getPixel(x, y)
+                        r += Color.red(p); g += Color.green(p); b += Color.blue(p); n++
+                    }
                 }
+                if (n > 0) Color.rgb((r / n).toInt(), (g / n).toInt(), (b / n).toInt())
+                else Color.GRAY
             }
-            if (n > 0) Color.rgb((r / n).toInt(), (g / n).toInt(), (b / n).toInt())
-            else Color.GRAY
+        } finally {
+            if (scaled !== bmp) scaled.recycle()
         }
     }
 

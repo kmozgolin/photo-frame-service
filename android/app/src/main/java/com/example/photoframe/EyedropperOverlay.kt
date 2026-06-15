@@ -78,7 +78,7 @@ class EyedropperOverlay @JvmOverloads constructor(
     // Hint text at bottom of preview
     private val hintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(153, 255, 255, 255) // tMid = 60% white
-        textSize = 12.5f
+        textSize = 12.5f * context.resources.displayMetrics.density
         textAlign = Paint.Align.CENTER
         setShadowLayer(2f, 0f, 1f, Color.BLACK)
     }
@@ -91,8 +91,6 @@ class EyedropperOverlay @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        hintPaint.textSize = 12.5f * dp
-
         // Hint text near bottom
         canvas.drawText(
             "Двигайте палец по фото, чтобы взять цвет пикселя",
@@ -137,7 +135,9 @@ class EyedropperOverlay @JvmOverloads constructor(
                     (by + sr).coerceAtMost(bmp.height.toFloat())
                 )
                 val dst = RectF(cx - r, cy - r, cx + r, cy + r)
-                canvas.drawBitmap(bmp, src.toRect(), dst, bitmapPaint)
+                // roundOut() avoids asymmetric truncation of toInt()
+                val srcRect = Rect(); src.roundOut(srcRect)
+                canvas.drawBitmap(bmp, srcRect, dst, bitmapPaint)
             }
         } else {
             canvas.drawColor(Color.DKGRAY)
@@ -194,4 +194,3 @@ class EyedropperOverlay @JvmOverloads constructor(
     }
 }
 
-private fun RectF.toRect() = Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())

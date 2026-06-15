@@ -100,9 +100,11 @@ class VerticalSeekBar @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val minW = (36 * resources.displayMetrics.density).toInt()
+        val density = resources.displayMetrics.density
+        val minW = (36 * density).toInt()
+        val minH = (200 * density).toInt()  // sensible default so view isn't invisible in UNSPECIFIED containers
         val w = resolveSize(minW, widthMeasureSpec)
-        val h = resolveSize(0, heightMeasureSpec)
+        val h = resolveSize(minH, heightMeasureSpec)
         setMeasuredDimension(w, h)
     }
 }

@@ -27,6 +27,37 @@
             android:layout_marginBottom="30dp"
             android:visibility="gone" />
 
+        <!-- Empty state: shown until a photo is loaded -->
+        <LinearLayout
+            android:id="@+id/emptyStateView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="30dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:background="@drawable/bg_empty_state"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_download"
+                android:contentDescription="Загрузить"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Загрузить"
+                android:textSize="13sp"
+                android:textColor="@color/tMid"
+                android:fontFamily="monospace" />
+
+        </LinearLayout>
+
         <!-- Dimensions status bar -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,7 +87,25 @@
         android:background="@color/panel_bg"
         android:padding="14dp">
 
-        <!-- Header: "Рамка" + Upload chip -->
+        <!-- Upload button — top of panel, above all controls -->
+        <Button
+            android:id="@+id/loadButton"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="Загрузить"
+            android:textSize="12sp"
+            android:textColor="@color/tMid"
+            android:background="@drawable/bg_auto_pill"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Header: "Рамка" + rotate -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -89,25 +138,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:stateListAnimator="@null"
-                android:layout_marginEnd="8dp"
                 android:visibility="gone" />
-
-            <!-- Upload chip: pill shape, 40dp height -->
-            <Button
-                android:id="@+id/loadButton"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Загрузить"
-                android:textSize="12sp"
-                android:textColor="@color/tMid"
-                android:background="@drawable/bg_auto_pill"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null" />
 
         </LinearLayout>
 
@@ -353,16 +384,16 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="10dp">
 
-            <!-- "Авто" pill -->
+            <!-- "А" auto-color (same 40dp circle as eyedropper and wheel) -->
             <Button
                 android:id="@+id/btnAuto"
-                android:layout_width="wrap_content"
+                android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:text="Авто"
-                android:textSize="12sp"
+                android:text="А"
+                android:textSize="15sp"
                 android:textColor="@color/tMid"
-                android:background="@drawable/bg_auto_pill"
-                android:paddingHorizontal="14dp"
+                android:background="@drawable/bg_tool_circle"
+                android:paddingHorizontal="0dp"
                 android:paddingVertical="0dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"

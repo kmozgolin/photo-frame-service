@@ -49,11 +49,11 @@ class ZoomableImageView @JvmOverloads constructor(
 
     // Use this when updating the frame bitmap - preserves current zoom/pan
     fun updateFrameBitmap(bm: android.graphics.Bitmap?) {
-        val savedMatrix = Matrix(imgMatrix)
+        val snapshot = Matrix(imgMatrix)   // renamed to avoid shadowing class-level savedMatrix field
         val savedScale = scaleFactor
         super.setImageBitmap(bm)
         scaleFactor = savedScale
-        imgMatrix.set(savedMatrix)
+        imgMatrix.set(snapshot)
         imageMatrix = imgMatrix
     }
 
