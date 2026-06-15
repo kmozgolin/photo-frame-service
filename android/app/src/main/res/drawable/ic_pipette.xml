@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#99FFFFFF">
+    <!-- Eyedropper / pipette (Material "colorize") -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M20.71,5.63 l-2.34,-2.34 a1,1 0 0 0 -1.41,0 l-3.12,3.12 -1.23,-1.22 -1.41,1.41 0.92,0.92 -8.07,8.07 V20 h4.34 l8.07,-8.07 0.92,0.92 1.41,-1.41 -1.22,-1.23 3.12,-3.12 a1,1 0 0 0 0,-1.41 z M6.92,18 H5 v-1.92 l7.06,-7.06 1.92,1.92 z" />
+</vector>

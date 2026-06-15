@@ -11,6 +11,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,7 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.IOException
+import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,20 +37,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pickColorButton: Button
     private lateinit var previewImage: ZoomableImageView
     private lateinit var eyedropperOverlay: EyedropperOverlay
-    private lateinit var verticalSeekBar: VerticalSeekBar
-    private lateinit var horizontalSeekBar: VerticalSeekBar
-    private lateinit var verticalValueText: TextView
-    private lateinit var horizontalValueText: TextView
     private lateinit var dimensionsText: TextView
-    private lateinit var linkButton: Button
-    private lateinit var linkStatusText: TextView
     private lateinit var btnRotate: Button
 
-    private lateinit var colorHexText: TextView
-    private lateinit var colorPreviewSwatch: View
+    // Border thickness (2D pad + numeric fields)
+    private lateinit var borderPad: BorderPadView
+    private lateinit var fieldSides: EditText
+    private lateinit var fieldTopBottom: EditText
+
+    // Color
+    private lateinit var activeSwatch: View
+    private lateinit var hexInput: EditText
     private lateinit var btnAuto: Button
     private lateinit var btnEyedropper: Button
     private lateinit var btnColorWheel: Button
+    private lateinit var modeLabel: TextView
+    private lateinit var opacitySlider: OpacitySliderView
+    private lateinit var opacityValueText: TextView
 
     private lateinit var swatchSelected: View
     private lateinit var swatchSelectedRing: View
@@ -73,11 +78,19 @@ class MainActivity : AppCompatActivity() {
     private var previewBitmap: Bitmap? = null
     private var customColor: Int = Color.parseColor("#808080")
     private var pendingSaveBitmap: Bitmap? = null
-    private var sizesLinked = true
     private var eyedropperActiveColor: Int = Color.GRAY
+
+    // Border model — the single source of truth (image px):
+    //   borderSides    = left/right thickness (adds to WIDTH),  pad X axis
+    //   borderTopBottom = top/bottom thickness (adds to HEIGHT), pad Y axis
+    private var borderSides = 30
+    private var borderTopBottom = 30
+    private var frameOpacity = 1f
+    private val maxBorder = 500
 
     private var renderJob: Job? = null
     private var autoColorJob: Job? = null
+    private var isSyncing = false   // guards pad ↔ field ↔ hex update loops
 
     private var colorMode = COLOR_CUSTOM
 
@@ -95,88 +108,110 @@ class MainActivity : AppCompatActivity() {
     private val colorGray = Color.parseColor("#8C8C92")
     private val colorWarm = Color.parseColor("#CAA46F")
 
-    // Modern image picker — replaces deprecated startActivityForResult
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { loadSourceImage(it) }
-    }
+    ) { uri: Uri? -> uri?.let { loadSourceImage(it) } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        loadButton          = findViewById(R.id.loadButton)
-        saveButton          = findViewById(R.id.saveButton)
-        pickColorButton     = findViewById(R.id.pickColorButton)
-        previewImage        = findViewById(R.id.previewImage)
-        eyedropperOverlay   = findViewById(R.id.eyedropperOverlay)
-        verticalSeekBar     = findViewById(R.id.verticalSeekBar)
-        horizontalSeekBar   = findViewById(R.id.horizontalSeekBar)
-        verticalValueText   = findViewById(R.id.verticalValueText)
-        horizontalValueText = findViewById(R.id.horizontalValueText)
-        dimensionsText      = findViewById(R.id.dimensionsText)
-        linkButton          = findViewById(R.id.linkButton)
-        linkStatusText      = findViewById(R.id.linkStatusText)
-        btnRotate           = findViewById(R.id.btnRotate)
+        loadButton        = findViewById(R.id.loadButton)
+        saveButton        = findViewById(R.id.saveButton)
+        pickColorButton   = findViewById(R.id.pickColorButton)
+        previewImage      = findViewById(R.id.previewImage)
+        eyedropperOverlay = findViewById(R.id.eyedropperOverlay)
+        dimensionsText    = findViewById(R.id.dimensionsText)
+        btnRotate         = findViewById(R.id.btnRotate)
 
-        colorHexText        = findViewById(R.id.colorHexText)
-        colorPreviewSwatch  = findViewById(R.id.colorPreviewSwatch)
-        btnAuto             = findViewById(R.id.btnAuto)
-        btnEyedropper       = findViewById(R.id.btnEyedropper)
-        btnColorWheel       = findViewById(R.id.btnColorWheel)
+        borderPad         = findViewById(R.id.borderPad)
+        fieldSides        = findViewById(R.id.fieldSides)
+        fieldTopBottom    = findViewById(R.id.fieldTopBottom)
 
-        swatchSelected      = findViewById(R.id.swatchSelected)
-        swatchSelectedRing  = findViewById(R.id.swatchSelectedRing)
-        swatchWhite         = findViewById(R.id.swatchWhite)
-        swatchWhiteRing     = findViewById(R.id.swatchWhiteRing)
-        swatchDark          = findViewById(R.id.swatchDark)
-        swatchDarkRing      = findViewById(R.id.swatchDarkRing)
-        swatchGray          = findViewById(R.id.swatchGray)
-        swatchGrayRing      = findViewById(R.id.swatchGrayRing)
-        swatchWarm          = findViewById(R.id.swatchWarm)
-        swatchWarmRing      = findViewById(R.id.swatchWarmRing)
-        swatchPlus          = findViewById(R.id.swatchPlus)
+        activeSwatch      = findViewById(R.id.activeSwatch)
+        hexInput          = findViewById(R.id.hexInput)
+        btnAuto           = findViewById(R.id.btnAuto)
+        btnEyedropper     = findViewById(R.id.btnEyedropper)
+        btnColorWheel     = findViewById(R.id.btnColorWheel)
+        modeLabel         = findViewById(R.id.modeLabel)
+        opacitySlider     = findViewById(R.id.opacitySlider)
+        opacityValueText  = findViewById(R.id.opacityValueText)
 
-        emptyStateView      = findViewById(R.id.emptyStateView)
-        swatchesRow         = findViewById(R.id.swatchesRow)
-        dropperCard         = findViewById(R.id.dropperCard)
-        dropperColorSwatch  = findViewById(R.id.dropperColorSwatch)
-        dropperHexText      = findViewById(R.id.dropperHexText)
-        btnDropperConfirm   = findViewById(R.id.btnDropperConfirm)
+        swatchSelected     = findViewById(R.id.swatchSelected)
+        swatchSelectedRing = findViewById(R.id.swatchSelectedRing)
+        swatchWhite        = findViewById(R.id.swatchWhite)
+        swatchWhiteRing    = findViewById(R.id.swatchWhiteRing)
+        swatchDark         = findViewById(R.id.swatchDark)
+        swatchDarkRing     = findViewById(R.id.swatchDarkRing)
+        swatchGray         = findViewById(R.id.swatchGray)
+        swatchGrayRing     = findViewById(R.id.swatchGrayRing)
+        swatchWarm         = findViewById(R.id.swatchWarm)
+        swatchWarmRing     = findViewById(R.id.swatchWarmRing)
+        swatchPlus         = findViewById(R.id.swatchPlus)
+
+        emptyStateView     = findViewById(R.id.emptyStateView)
+        swatchesRow        = findViewById(R.id.swatchesRow)
+        dropperCard        = findViewById(R.id.dropperCard)
+        dropperColorSwatch = findViewById(R.id.dropperColorSwatch)
+        dropperHexText     = findViewById(R.id.dropperHexText)
+        btnDropperConfirm  = findViewById(R.id.btnDropperConfirm)
 
         swatchWhite.setBackgroundColor(colorWhite)
         swatchDark.setBackgroundColor(colorDark)
         swatchGray.setBackgroundColor(colorGray)
         swatchWarm.setBackgroundColor(colorWarm)
 
-        verticalSeekBar.value   = 30
-        horizontalSeekBar.value = 30
-        verticalSeekBar.max     = 500
-        horizontalSeekBar.max   = 500
+        // ── 2D pad ──────────────────────────────────────────────────────────
+        borderPad.maxValue = maxBorder
+        borderPad.sides = borderSides
+        borderPad.topBottom = borderTopBottom
+        borderPad.onValuesChanged = { s, tb, dragging ->
+            borderSides = s; borderTopBottom = tb
+            isSyncing = true
+            fieldSides.setText(s.toString())
+            fieldTopBottom.setText(tb.toString())
+            isSyncing = false
+            updateDimensionsText()
+            if (!dragging) renderPreview(keepZoom = true)
+        }
 
+        setupNumberField(fieldSides, isSides = true)
+        setupNumberField(fieldTopBottom, isSides = false)
+
+        // ── Opacity ─────────────────────────────────────────────────────────
+        opacitySlider.value = frameOpacity
+        opacitySlider.color = resolveFrameColor()
+        opacitySlider.onValueChanged = { v, dragging ->
+            frameOpacity = v
+            opacityValueText.text = "${(v * 100).roundToInt()}%"
+            if (!dragging) renderPreview(keepZoom = true)
+        }
+
+        // ── Eyedropper overlay ──────────────────────────────────────────────
         eyedropperOverlay.zoomableView = previewImage
         eyedropperOverlay.onColorChanged = { color ->
             eyedropperActiveColor = color
             updateDropperCard(color)
         }
-        eyedropperOverlay.onFingerLifted = { /* color stays in card */ }
+        eyedropperOverlay.onFingerLifted = { }
 
         saveButton.isEnabled = false
         btnColorWheel.post { drawColorWheelButton(btnColorWheel) }
 
+        setupHexInput()
         updateSwatchUI()
         updateColorInfo()
-        updateLinkButton()
 
-        emptyStateView.setOnClickListener   { openImagePicker() }
-        loadButton.setOnClickListener       { openImagePicker() }
-        saveButton.setOnClickListener       { savePreviewImage() }
-        pickColorButton.setOnClickListener  { openColorPicker() }
-        btnRotate.setOnClickListener        { rotateSourceImage() }
+        loadButton.setOnClickListener      { openImagePicker() }
+        emptyStateView.setOnClickListener  { openImagePicker() }
+        saveButton.setOnClickListener      { savePreviewImage() }
+        pickColorButton.setOnClickListener { openColorPicker() }
+        btnRotate.setOnClickListener       { rotateSourceImage() }
 
+        // Auto (magic wand)
         btnAuto.setOnClickListener {
             val src = sourceBitmap ?: return@setOnClickListener
+            modeLabel.text = "Авто"
             autoColorJob?.cancel()
             autoColorJob = lifecycleScope.launch {
                 val color = withContext(Dispatchers.Default) { computeAutoColor(src) }
@@ -188,8 +223,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnEyedropper.setOnClickListener   { showEyedropper() }
-        btnColorWheel.setOnClickListener   { openColorPicker() }
+        btnEyedropper.setOnClickListener { modeLabel.text = "Пипетка"; showEyedropper() }
+        btnColorWheel.setOnClickListener { modeLabel.text = "Палитра"; openColorPicker() }
 
         swatchSelected.setOnClickListener     { selectColorMode(COLOR_CUSTOM) }
         swatchSelectedRing.setOnClickListener { selectColorMode(COLOR_CUSTOM) }
@@ -201,47 +236,57 @@ class MainActivity : AppCompatActivity() {
         swatchGrayRing.setOnClickListener     { selectColorMode(COLOR_GRAY) }
         swatchWarm.setOnClickListener         { selectColorMode(COLOR_WARM) }
         swatchWarmRing.setOnClickListener     { selectColorMode(COLOR_WARM) }
-        swatchPlus.setOnClickListener         { openColorPicker() }
+        swatchPlus.setOnClickListener         { modeLabel.text = "Палитра"; openColorPicker() }
         btnDropperConfirm.setOnClickListener  { confirmDropperColor() }
-
-        linkButton.setOnClickListener {
-            sizesLinked = !sizesLinked
-            updateLinkButton()
-            if (sizesLinked) {
-                val avg = (verticalSeekBar.value + horizontalSeekBar.value) / 2
-                verticalSeekBar.value   = avg
-                horizontalSeekBar.value = avg
-                verticalValueText.text   = avg.toString()
-                horizontalValueText.text = avg.toString()
-                renderPreview(keepZoom = true)
-            }
-        }
-
-        verticalSeekBar.onValueChanged = { value, isDragging ->
-            verticalValueText.text = value.toString()
-            if (sizesLinked) {
-                horizontalSeekBar.value  = value
-                horizontalValueText.text = value.toString()
-            }
-            updateDimensionsText()
-            if (!isDragging) renderPreview(keepZoom = true)
-        }
-
-        horizontalSeekBar.onValueChanged = { value, isDragging ->
-            horizontalValueText.text = value.toString()
-            if (sizesLinked) {
-                verticalSeekBar.value  = value
-                verticalValueText.text = value.toString()
-            }
-            updateDimensionsText()
-            if (!isDragging) renderPreview(keepZoom = true)
-        }
     }
 
-    // ── Color mode ────────────────────────────────────────────────────────────
+    // ── Numeric fields (independent, no magnet) ─────────────────────────────
+
+    private fun setupNumberField(field: EditText, isSides: Boolean) {
+        field.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (isSyncing) return
+                val v = s?.toString()?.toIntOrNull() ?: return
+                val cv = v.coerceIn(0, maxBorder)
+                if (isSides) borderSides = cv else borderTopBottom = cv
+                // reflect on pad without snapping or re-triggering this watcher
+                if (isSides) borderPad.sides = cv else borderPad.topBottom = cv
+                updateDimensionsText()
+                renderPreview(keepZoom = true)
+            }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+    }
+
+    // ── Editable hex ────────────────────────────────────────────────────────
+
+    private fun setupHexInput() {
+        hexInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (isSyncing) return
+                val text = s?.toString()?.trim() ?: return
+                val hex = if (text.startsWith("#")) text else "#$text"
+                if (!Regex("^#[0-9a-fA-F]{6}$").matches(hex)) return
+                val color = try { Color.parseColor(hex) } catch (e: Exception) { return }
+                customColor = color
+                colorMode = COLOR_CUSTOM
+                updateSwatchUI()
+                // update swatch + opacity but NOT the hex text (user is typing)
+                activeSwatch.background = roundedSwatch(color)
+                opacitySlider.color = color
+                renderPreview(keepZoom = true)
+            }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+    }
+
+    // ── Color mode ──────────────────────────────────────────────────────────
 
     private fun selectColorMode(mode: Int) {
         colorMode = mode
+        modeLabel.text = ""
         updateSwatchUI()
         updateColorInfo()
         renderPreview(keepZoom = true)
@@ -254,19 +299,20 @@ class MainActivity : AppCompatActivity() {
         swatchGrayRing.visibility     = if (colorMode == COLOR_GRAY)   View.VISIBLE else View.INVISIBLE
         swatchWarmRing.visibility     = if (colorMode == COLOR_WARM)   View.VISIBLE else View.INVISIBLE
         swatchSelected.setBackgroundColor(customColor)
-        if (colorMode == COLOR_AUTO) {
-            btnAuto.background = ContextCompat.getDrawable(this, R.drawable.bg_tool_circle_active)
-            btnAuto.setTextColor(ContextCompat.getColor(this, R.color.canvas_bg))
-        } else {
-            btnAuto.background = ContextCompat.getDrawable(this, R.drawable.bg_tool_circle)
-            btnAuto.setTextColor(ContextCompat.getColor(this, R.color.tMid))
-        }
     }
 
     private fun updateColorInfo() {
         val color = resolveFrameColor()
-        colorPreviewSwatch.setBackgroundColor(color)
-        colorHexText.text = String.format("#%06X", 0xFFFFFF and color)
+        activeSwatch.background = roundedSwatch(color)
+        opacitySlider.color = color
+        isSyncing = true
+        hexInput.setText(String.format("#%06X", 0xFFFFFF and color))
+        isSyncing = false
+    }
+
+    private fun roundedSwatch(color: Int): GradientDrawable = GradientDrawable().apply {
+        cornerRadius = 4f * resources.displayMetrics.density
+        setColor(color)
     }
 
     private fun resolveFrameColor(): Int = when (colorMode) {
@@ -277,25 +323,14 @@ class MainActivity : AppCompatActivity() {
         else        -> customColor
     }
 
-    // ── Link button ───────────────────────────────────────────────────────────
-
-    private fun updateLinkButton() {
-        if (sizesLinked) {
-            linkButton.background = ContextCompat.getDrawable(this, R.drawable.bg_link_linked)
-            linkButton.setTextColor(ContextCompat.getColor(this, R.color.canvas_bg))
-            linkStatusText.text = "связаны"
-        } else {
-            linkButton.background = ContextCompat.getDrawable(this, R.drawable.bg_link_unlinked)
-            linkButton.setTextColor(ContextCompat.getColor(this, R.color.tMid))
-            linkStatusText.text = "раздельно"
-        }
+    private fun applyAlpha(color: Int, opacity: Float): Int {
+        val a = (opacity * 255f).roundToInt().coerceIn(0, 255)
+        return Color.argb(a, Color.red(color), Color.green(color), Color.blue(color))
     }
 
-    // ── Image loading ─────────────────────────────────────────────────────────
+    // ── Image loading ───────────────────────────────────────────────────────
 
-    private fun openImagePicker() {
-        imagePickerLauncher.launch("image/*")
-    }
+    private fun openImagePicker() { imagePickerLauncher.launch("image/*") }
 
     private fun loadSourceImage(uri: Uri) {
         lifecycleScope.launch {
@@ -319,7 +354,8 @@ class MainActivity : AppCompatActivity() {
             sourceBitmap = result
             btnRotate.visibility = View.VISIBLE
             renderPreview(keepZoom = false)
-            // Auto-color: compute asynchronously, then re-render with result
+            // Auto-color on load
+            modeLabel.text = "Авто"
             autoColorJob?.cancel()
             autoColorJob = lifecycleScope.launch autoColor@{
                 val src = sourceBitmap ?: return@autoColor
@@ -329,7 +365,7 @@ class MainActivity : AppCompatActivity() {
                     colorMode = COLOR_AUTO
                     updateSwatchUI()
                     updateColorInfo()
-                    renderPreview(keepZoom = false)  // always fit-to-screen on initial load
+                    renderPreview(keepZoom = false)
                 }
             }
         }
@@ -359,7 +395,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── Render ──────────────────────────────────────────────────────────────
 
     private fun renderPreview(keepZoom: Boolean = true) {
         val source = sourceBitmap ?: run {
@@ -370,9 +406,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
         emptyStateView.visibility = View.GONE
-        val borderV    = verticalSeekBar.value
-        val borderH    = horizontalSeekBar.value
-        val frameColor = resolveFrameColor()
+        val borderH    = borderSides       // width padding (left/right)
+        val borderV    = borderTopBottom   // height padding (top/bottom)
+        val frameColor = applyAlpha(resolveFrameColor(), frameOpacity)
 
         renderJob?.cancel()
         renderJob = lifecycleScope.launch {
@@ -391,20 +427,18 @@ class MainActivity : AppCompatActivity() {
             previewBitmap = bitmap
             old?.recycle()
             saveButton.isEnabled = true
-            dimensionsText.text =
-                "${bitmap.width} × ${bitmap.height} px  |  рамка: ${borderH}px ↔  ${borderV}px ↕"
+            dimensionsText.text = "${bitmap.width} × ${bitmap.height} px"
         }
     }
 
     private fun updateDimensionsText() {
-        val source  = sourceBitmap ?: return
-        val borderH = horizontalSeekBar.value
-        val borderV = verticalSeekBar.value
-        dimensionsText.text =
-            "${source.width + borderH * 2} × ${source.height + borderV * 2} px  |  рамка: ${borderH}px ↔  ${borderV}px ↕"
+        val source = sourceBitmap ?: return
+        val w = source.width + borderSides * 2
+        val h = source.height + borderTopBottom * 2
+        dimensionsText.text = "$w × $h px"
     }
 
-    // ── Eyedropper ────────────────────────────────────────────────────────────
+    // ── Eyedropper ──────────────────────────────────────────────────────────
 
     private fun showEyedropper() {
         if (previewBitmap == null) return
@@ -452,7 +486,7 @@ class MainActivity : AppCompatActivity() {
                 updateColorInfo()
                 renderPreview(keepZoom = true)
             },
-            onEyedropperRequested = { showEyedropper() }
+            onEyedropperRequested = { modeLabel.text = "Пипетка"; showEyedropper() }
         ).show()
     }
 
@@ -574,18 +608,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun doSaveBitmap(bitmap: Bitmap) {
+        // PNG preserves alpha when the frame is semi-transparent; JPEG otherwise (smaller).
+        val usePng = frameOpacity < 1f
         lifecycleScope.launch {
             val ok = withContext(Dispatchers.IO) {
                 try {
-                    val filename = "Framing-${System.currentTimeMillis()}.jpg"
+                    val ext = if (usePng) "png" else "jpg"
+                    val mime = if (usePng) "image/png" else "image/jpeg"
+                    val filename = "Framing-${System.currentTimeMillis()}.$ext"
                     val bytes = ByteArrayOutputStream().use { out ->
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                        if (usePng) bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                        else        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
                         out.toByteArray()
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         val values = ContentValues().apply {
                             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-                            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                            put(MediaStore.Images.Media.MIME_TYPE, mime)
                             put(MediaStore.Images.Media.RELATIVE_PATH,
                                 Environment.DIRECTORY_PICTURES + "/Framing")
                             put(MediaStore.Images.Media.IS_PENDING, 1)

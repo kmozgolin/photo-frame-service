@@ -79,9 +79,9 @@
 
     </FrameLayout>
 
-    <!-- PANEL (RIGHT, fixed 276dp) -->
+    <!-- PANEL (RIGHT, fixed 286dp) -->
     <LinearLayout
-        android:layout_width="276dp"
+        android:layout_width="286dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/panel_bg"
@@ -105,336 +105,306 @@
             android:stateListAnimator="@null"
             android:layout_marginBottom="12dp" />
 
-        <!-- Header: "Рамка" + rotate -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Рамка"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/tHi" />
-
-            <!-- Rotate button (visible after image loaded) -->
-            <Button
-                android:id="@+id/btnRotate"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:text="↻"
-                android:textSize="17sp"
-                android:textColor="@color/tMid"
-                android:background="@drawable/bg_tool_circle"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingHorizontal="0dp"
-                android:paddingVertical="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null"
-                android:visibility="gone" />
-
-        </LinearLayout>
-
-        <!-- "ШИРИНА РАМКИ" label + link status -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="ШИРИНА РАМКИ"
-                android:textSize="10sp"
-                android:textColor="@color/tLo"
-                android:fontFamily="monospace"
-                android:letterSpacing="0.08" />
-
-            <TextView
-                android:id="@+id/linkStatusText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="связаны"
-                android:textSize="10sp"
-                android:textColor="@color/tLo"
-                android:fontFamily="monospace" />
-
-        </LinearLayout>
-
-        <!-- SLIDERS AREA (weight=1, fills available height) -->
-        <LinearLayout
+        <!-- Scrollable controls -->
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:scrollbars="none"
+            android:fillViewport="true">
 
-            <!-- LEFT slider column: ВЕРТИК. -->
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <!-- Value + px label -->
+                <!-- Header: "Рамка" + rotate -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="6dp">
+                    android:layout_marginBottom="10dp">
 
                     <TextView
-                        android:id="@+id/verticalValueText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="30"
-                        android:textSize="20sp"
-                        android:textColor="@color/tHi"
-                        android:fontFamily="monospace"
-                        android:textStyle="bold" />
+                        android:layout_weight="1"
+                        android:text="Рамка"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/tHi" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="px"
-                        android:textSize="11sp"
-                        android:textColor="@color/tLo"
-                        android:fontFamily="monospace"
-                        android:layout_marginStart="2dp" />
+                    <Button
+                        android:id="@+id/btnRotate"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:text="↻"
+                        android:textSize="17sp"
+                        android:textColor="@color/tMid"
+                        android:background="@drawable/bg_tool_circle"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingHorizontal="0dp"
+                        android:paddingVertical="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:stateListAnimator="@null"
+                        android:visibility="gone" />
 
                 </LinearLayout>
 
-                <!-- VerticalSeekBar -->
-                <com.example.photoframe.VerticalSeekBar
-                    android:id="@+id/verticalSeekBar"
-                    android:layout_width="36dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <!-- ВЕРТИК. label -->
+                <!-- Толщина (секция заголовок) -->
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="ВЕРТИК."
-                    android:textSize="9.5sp"
+                    android:text="ТОЛЩИНА"
+                    android:textSize="10sp"
                     android:textColor="@color/tLo"
                     android:fontFamily="monospace"
-                    android:letterSpacing="0.14"
-                    android:layout_marginTop="6dp" />
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="8dp" />
 
-            </LinearLayout>
+                <!-- 2D pad: X = по бокам, Y = верх/низ; magnetic diagonal -->
+                <com.example.photoframe.BorderPadView
+                    android:id="@+id/borderPad"
+                    android:layout_width="match_parent"
+                    android:layout_height="190dp"
+                    android:layout_marginBottom="10dp" />
 
-            <!-- Link toggle column (34dp wide) -->
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="match_parent">
+                <!-- Numeric fields: по бокам / верх-низ -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="14dp">
 
-                <!-- Vertical line through center -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="6dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="↔ по бокам"
+                            android:textSize="10sp"
+                            android:textColor="@color/tLo"
+                            android:fontFamily="monospace"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/fieldSides"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="12dp"
+                            android:text="30"
+                            android:textSize="16sp"
+                            android:textColor="@color/tHi"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace"
+                            android:inputType="number"
+                            android:maxLength="4"
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="6dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="↕ верх / низ"
+                            android:textSize="10sp"
+                            android:textColor="@color/tLo"
+                            android:fontFamily="monospace"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/fieldTopBottom"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="12dp"
+                            android:text="30"
+                            android:textSize="16sp"
+                            android:textColor="@color/tHi"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace"
+                            android:inputType="number"
+                            android:maxLength="4"
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Hairline divider -->
                 <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@color/hairline" />
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@color/hairline"
+                    android:layout_marginBottom="12dp" />
 
-                <!-- Link button circle -->
-                <Button
-                    android:id="@+id/linkButton"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:layout_gravity="center"
-                    android:text="⛓"
-                    android:textSize="13sp"
-                    android:background="@drawable/bg_link_linked"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingHorizontal="0dp"
-                    android:paddingVertical="0dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:stateListAnimator="@null"
-                    android:textColor="@color/canvas_bg" />
+                <!-- Цвет (секция заголовок) -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ЦВЕТ"
+                    android:textSize="10sp"
+                    android:textColor="@color/tLo"
+                    android:fontFamily="monospace"
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="8dp" />
 
-            </FrameLayout>
-
-            <!-- RIGHT slider column: ГОРИЗ. -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp">
-
-                <!-- Value + px label -->
+                <!-- Active swatch + editable hex -->
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="10dp"
+                    android:layout_marginBottom="12dp">
+
+                    <View
+                        android:id="@+id/activeSwatch"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/bg_swatch_selected" />
+
+                    <EditText
+                        android:id="@+id/hexInput"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:gravity="center_vertical"
+                        android:text="#FAFAFA"
+                        android:hint="#RRGGBB"
+                        android:textSize="14sp"
+                        android:textColor="@color/tHi"
+                        android:textColorHint="@color/tLo"
+                        android:fontFamily="monospace"
+                        android:inputType="textCapCharacters"
+                        android:maxLength="7"
+                        android:imeOptions="actionDone"
+                        android:importantForAutofill="no" />
+
+                </LinearLayout>
+
+                <!-- Tool row: wand (auto) + pipette + wheel -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <!-- Auto (magic wand) -->
+                    <Button
+                        android:id="@+id/btnAuto"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_tool_circle"
+                        android:foreground="@drawable/ic_wand"
+                        android:foregroundGravity="center"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:stateListAnimator="@null"
+                        android:layout_marginEnd="8dp" />
+
+                    <!-- Pipette -->
+                    <Button
+                        android:id="@+id/btnEyedropper"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_tool_circle"
+                        android:foreground="@drawable/ic_pipette"
+                        android:foregroundGravity="center"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:stateListAnimator="@null"
+                        android:layout_marginEnd="8dp" />
+
+                    <!-- Color wheel (ring-gradient, filled programmatically) -->
+                    <Button
+                        android:id="@+id/btnColorWheel"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:text=""
+                        android:background="@drawable/bg_tool_circle"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingHorizontal="0dp"
+                        android:paddingVertical="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:stateListAnimator="@null" />
+
+                </LinearLayout>
+
+                <!-- Active mode label -->
+                <TextView
+                    android:id="@+id/modeLabel"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="11sp"
+                    android:textColor="@color/tMid"
+                    android:fontFamily="monospace"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Opacity -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:layout_marginBottom="6dp">
 
                     <TextView
-                        android:id="@+id/horizontalValueText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="30"
-                        android:textSize="20sp"
-                        android:textColor="@color/tHi"
-                        android:fontFamily="monospace"
-                        android:textStyle="bold" />
+                        android:layout_weight="1"
+                        android:text="прозрачность"
+                        android:textSize="11sp"
+                        android:textColor="@color/tMid"
+                        android:fontFamily="monospace" />
 
                     <TextView
+                        android:id="@+id/opacityValueText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="px"
+                        android:text="100%"
                         android:textSize="11sp"
-                        android:textColor="@color/tLo"
-                        android:fontFamily="monospace"
-                        android:layout_marginStart="2dp" />
+                        android:textColor="@color/tMid"
+                        android:fontFamily="monospace" />
 
                 </LinearLayout>
 
-                <!-- VerticalSeekBar -->
-                <com.example.photoframe.VerticalSeekBar
-                    android:id="@+id/horizontalSeekBar"
-                    android:layout_width="36dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <!-- ГОРИЗ. label -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ГОРИЗ."
-                    android:textSize="9.5sp"
-                    android:textColor="@color/tLo"
-                    android:fontFamily="monospace"
-                    android:letterSpacing="0.14"
-                    android:layout_marginTop="6dp" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- Hairline divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:background="@color/hairline"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp" />
-
-        <!-- ЦВЕТ row: label + swatch + hex -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="ЦВЕТ"
-                android:textSize="10sp"
-                android:textColor="@color/tLo"
-                android:fontFamily="monospace"
-                android:letterSpacing="0.08" />
-
-            <!-- Color swatch 14dp square -->
-            <View
-                android:id="@+id/colorPreviewSwatch"
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginEnd="6dp"
-                android:background="@color/accent_white" />
-
-            <TextView
-                android:id="@+id/colorHexText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="#FAFAFA"
-                android:textSize="11sp"
-                android:textColor="@color/tMid"
-                android:fontFamily="monospace" />
-
-        </LinearLayout>
-
-        <!-- Tool row: Auto pill + eyedropper circle + color wheel circle -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
-
-            <!-- "А" auto-color (same 40dp circle as eyedropper and wheel) -->
-            <Button
-                android:id="@+id/btnAuto"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:text="А"
-                android:textSize="15sp"
-                android:textColor="@color/tMid"
-                android:background="@drawable/bg_tool_circle"
-                android:paddingHorizontal="0dp"
-                android:paddingVertical="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null"
-                android:layout_marginEnd="8dp" />
-
-            <!-- Eyedropper circle -->
-            <Button
-                android:id="@+id/btnEyedropper"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:text="💧"
-                android:textSize="16sp"
-                android:background="@drawable/bg_tool_circle"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingHorizontal="0dp"
-                android:paddingVertical="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null"
-                android:layout_marginEnd="8dp" />
-
-            <!-- Color wheel circle (filled programmatically with SweepGradient) -->
-            <Button
-                android:id="@+id/btnColorWheel"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:text=""
-                android:background="@drawable/bg_tool_circle"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingHorizontal="0dp"
-                android:paddingVertical="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null" />
-
-        </LinearLayout>
+                <com.example.photoframe.OpacitySliderView
+                    android:id="@+id/opacitySlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="28dp"
+                    android:layout_marginBottom="12dp" />
 
         <!-- Dropper card: shown when eyedropper is active (replaces swatches) -->
         <LinearLayout
@@ -599,11 +569,8 @@
 
         </LinearLayout>
 
-        <!-- Flex spacer -->
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            </LinearLayout>
+        </ScrollView>
 
         <!-- Save button: 48dp, 14dp radius, white bg -->
         <Button
