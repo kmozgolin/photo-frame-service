@@ -30,6 +30,9 @@ class EyedropperOverlay @JvmOverloads constructor(
     // Design: loupe 116dp diameter = 58dp radius
     private val loupeR = 58f * dp
 
+    // Vertical gap between the finger and the aim/crosshair point (so the finger never covers it).
+    private val aimOffset = loupeR + 24f * dp
+
     // Paints
     private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
 
@@ -99,14 +102,18 @@ class EyedropperOverlay @JvmOverloads constructor(
 
         if (!isFingerDown) return
 
-        // Loupe center: above the finger
-        val lx = touchX.coerceIn(loupeR + 8f, width - loupeR - 8f)
-        val ly = (touchY - loupeR - 24f * dp).coerceIn(loupeR + 8f, height - loupeR - 8f)
+        // Aim point = the sampled pixel, offset above the finger so the finger (and the user's
+        // hand) can sit below/outside the photo while the crosshair targets edge pixels.
+        val aimX = touchX
+        val aimY = touchY - aimOffset
+        // Loupe is drawn at the aim point, but clamped so it always stays fully on screen.
+        val lx = aimX.coerceIn(loupeR + 8f, width - loupeR - 8f)
+        val ly = aimY.coerceIn(loupeR + 8f, height - loupeR - 8f)
 
-        drawLoupe(canvas, lx, ly)
+        drawLoupe(canvas, lx, ly, aimX, aimY)
     }
 
-    private fun drawLoupe(canvas: Canvas, cx: Float, cy: Float) {
+    private fun drawLoupe(canvas: Canvas, cx: Float, cy: Float, sampleX: Float, sampleY: Float) {
         val r = loupeR
 
         // Drop shadow behind the loupe
@@ -122,7 +129,7 @@ class EyedropperOverlay @JvmOverloads constructor(
         val view = zoomableView
         val bmp = view?.getDisplayedBitmap()
         if (bmp != null) {
-            val coords = view.getBitmapCoordsFromScreen(touchX, touchY)
+            val coords = view.getBitmapCoordsFromScreen(sampleX, sampleY)
             if (coords != null) {
                 val bx = coords[0]
                 val by = coords[1]
@@ -189,7 +196,8 @@ class EyedropperOverlay @JvmOverloads constructor(
     }
 
     private fun sampleAndNotify() {
-        val color = zoomableView?.getPixelAtScreenPos(touchX, touchY) ?: return
+        // Sample at the aim point (offset above the finger), matching the loupe crosshair.
+        val color = zoomableView?.getPixelAtScreenPos(touchX, touchY - aimOffset) ?: return
         onColorChanged?.invoke(color)
     }
 }
