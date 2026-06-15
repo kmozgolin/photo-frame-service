@@ -14,9 +14,6 @@ class ZoomableImageView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : AppCompatImageView(context, attrs) {
 
-    var isEyedropperMode = false
-    var onEyedropperColor: ((Int) -> Unit)? = null
-
     private val imgMatrix = Matrix()
     private val savedMatrix = Matrix()
     private val scaleDetector = ScaleGestureDetector(context, ScaleListener())
@@ -82,17 +79,6 @@ class ZoomableImageView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (isEyedropperMode) {
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                val color = getPixelAtScreenPos(event.x, event.y)
-                if (color != null) {
-                    isEyedropperMode = false
-                    onEyedropperColor?.invoke(color)
-                }
-            }
-            return true
-        }
-
         scaleDetector.onTouchEvent(event)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {

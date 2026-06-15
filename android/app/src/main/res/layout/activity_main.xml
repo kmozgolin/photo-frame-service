@@ -589,13 +589,6 @@
             android:insetBottom="0dp"
             android:stateListAnimator="@null" />
 
-        <!-- Hidden pickColorButton for backward compat with ColorPickerDialog -->
-        <Button
-            android:id="@+id/pickColorButton"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-
     </LinearLayout>
 
 </LinearLayout>

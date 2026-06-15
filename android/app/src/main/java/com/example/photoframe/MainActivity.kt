@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var loadButton: Button
     private lateinit var saveButton: Button
-    private lateinit var pickColorButton: Button
     private lateinit var previewImage: ZoomableImageView
     private lateinit var eyedropperOverlay: EyedropperOverlay
     private lateinit var dimensionsText: TextView
@@ -118,7 +117,6 @@ class MainActivity : AppCompatActivity() {
 
         loadButton        = findViewById(R.id.loadButton)
         saveButton        = findViewById(R.id.saveButton)
-        pickColorButton   = findViewById(R.id.pickColorButton)
         previewImage      = findViewById(R.id.previewImage)
         eyedropperOverlay = findViewById(R.id.eyedropperOverlay)
         dimensionsText    = findViewById(R.id.dimensionsText)
@@ -205,7 +203,6 @@ class MainActivity : AppCompatActivity() {
         loadButton.setOnClickListener      { openImagePicker() }
         emptyStateView.setOnClickListener  { openImagePicker() }
         saveButton.setOnClickListener      { savePreviewImage() }
-        pickColorButton.setOnClickListener { openColorPicker() }
         btnRotate.setOnClickListener       { rotateSourceImage() }
 
         // Auto (magic wand)
@@ -413,15 +410,18 @@ class MainActivity : AppCompatActivity() {
         renderJob?.cancel()
         renderJob = lifecycleScope.launch {
             val bitmap = withContext(Dispatchers.Default) {
-                val w = source.width  + borderH * 2
-                val h = source.height + borderV * 2
-                val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-                Canvas(bmp).apply {
-                    drawColor(frameColor)
-                    drawBitmap(source, borderH.toFloat(), borderV.toFloat(), null)
-                }
-                bmp
+                try {
+                    val w = source.width  + borderH * 2
+                    val h = source.height + borderV * 2
+                    val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                    Canvas(bmp).apply {
+                        drawColor(frameColor)
+                        drawBitmap(source, borderH.toFloat(), borderV.toFloat(), null)
+                    }
+                    bmp
+                } catch (e: OutOfMemoryError) { null }
             }
+            if (bitmap == null) { showToast("Изображение слишком большое для такой рамки"); return@launch }
             val old = previewBitmap
             if (keepZoom) previewImage.updateFrameBitmap(bitmap) else previewImage.setImageBitmap(bitmap)
             previewBitmap = bitmap
@@ -649,6 +649,14 @@ class MainActivity : AppCompatActivity() {
             }
             showToast(if (ok) "Сохранено в Галерею → Framing" else "Не удалось сохранить")
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // lifecycleScope cancels coroutines automatically; free the large bitmaps here.
+        previewImage.setImageDrawable(null)
+        sourceBitmap?.recycle();  sourceBitmap = null
+        previewBitmap?.recycle(); previewBitmap = null
     }
 
     private fun showToast(message: String) =

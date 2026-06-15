@@ -51,7 +51,7 @@ class EyedropperOverlay @JvmOverloads constructor(
     private val targetWhitePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(242, 255, 255, 255) // 95% white
         style = Paint.Style.STROKE
-        strokeWidth = 2f * 1f // 2px
+        strokeWidth = 2f
     }
     private val targetDarkPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(102, 0, 0, 0) // 40% black
