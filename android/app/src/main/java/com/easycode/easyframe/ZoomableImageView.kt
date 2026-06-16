@@ -1,4 +1,4 @@
-package com.example.photoframe
+package com.easycode.easyframe
 
 import android.content.Context
 import android.graphics.Bitmap

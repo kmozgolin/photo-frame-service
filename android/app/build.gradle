@@ -9,11 +9,11 @@ repositories {
 }
 
 android {
-    namespace 'com.example.photoframe'
+    namespace 'com.easycode.easyframe'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'com.example.photoframe'
+        applicationId 'com.easycode.easyframe'
         minSdk 21
         targetSdk 34
         versionCode 2

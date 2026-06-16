@@ -1,4 +1,4 @@
-package com.example.photoframe
+package com.easycode.easyframe
 
 import android.Manifest
 import android.content.ContentValues

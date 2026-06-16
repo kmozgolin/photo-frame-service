@@ -13,14 +13,14 @@
         android:layout_weight="1"
         android:background="@color/canvas_bg">
 
-        <com.example.photoframe.ZoomableImageView
+        <com.easycode.easyframe.ZoomableImageView
             android:id="@+id/previewImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="30dp"
             android:contentDescription="Превью" />
 
-        <com.example.photoframe.EyedropperOverlay
+        <com.easycode.easyframe.EyedropperOverlay
             android:id="@+id/eyedropperOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -166,7 +166,7 @@
                     android:layout_marginBottom="8dp" />
 
                 <!-- 2D pad: X = по бокам, Y = верх/низ; magnetic diagonal -->
-                <com.example.photoframe.BorderPadView
+                <com.easycode.easyframe.BorderPadView
                     android:id="@+id/borderPad"
                     android:layout_width="match_parent"
                     android:layout_height="190dp"
@@ -400,7 +400,7 @@
 
                 </LinearLayout>
 
-                <com.example.photoframe.OpacitySliderView
+                <com.easycode.easyframe.OpacitySliderView
                     android:id="@+id/opacitySlider"
                     android:layout_width="match_parent"
                     android:layout_height="28dp"
