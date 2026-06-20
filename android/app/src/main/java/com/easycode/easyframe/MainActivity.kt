@@ -1,7 +1,9 @@
 package com.easycode.easyframe
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -66,6 +68,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var swatchWarmRing: View
     private lateinit var swatchPlus: View
 
+    private lateinit var donateButton: TextView
     private lateinit var emptyStateView: View
     private lateinit var swatchesRow: LinearLayout
     private lateinit var dropperCard: View
@@ -100,6 +103,10 @@ class MainActivity : AppCompatActivity() {
         const val COLOR_GRAY = 3
         const val COLOR_WARM = 4
         const val COLOR_AUTO = 5
+
+        // Free donation page opened in the browser. Replace with your real link
+        // (Buy Me a Coffee / Ko-fi / PayPal.me / Boosty, etc.).
+        const val DONATION_URL = "https://www.buymeacoffee.com/easyframe"
     }
 
     private val colorWhite = Color.parseColor("#FAFAFA")
@@ -147,6 +154,7 @@ class MainActivity : AppCompatActivity() {
         swatchWarmRing     = findViewById(R.id.swatchWarmRing)
         swatchPlus         = findViewById(R.id.swatchPlus)
 
+        donateButton       = findViewById(R.id.donateButton)
         emptyStateView     = findViewById(R.id.emptyStateView)
         swatchesRow        = findViewById(R.id.swatchesRow)
         dropperCard        = findViewById(R.id.dropperCard)
@@ -204,6 +212,7 @@ class MainActivity : AppCompatActivity() {
         emptyStateView.setOnClickListener  { openImagePicker() }
         saveButton.setOnClickListener      { savePreviewImage() }
         btnRotate.setOnClickListener       { rotateSourceImage() }
+        donateButton.setOnClickListener    { openDonationPage() }
 
         // Auto (magic wand)
         btnAuto.setOnClickListener {
@@ -657,6 +666,14 @@ class MainActivity : AppCompatActivity() {
         previewImage.setImageDrawable(null)
         sourceBitmap?.recycle();  sourceBitmap = null
         previewBitmap?.recycle(); previewBitmap = null
+    }
+
+    private fun openDonationPage() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(DONATION_URL)))
+        } catch (e: ActivityNotFoundException) {
+            showToast("Не удалось открыть страницу")
+        }
     }
 
     private fun showToast(message: String) =
