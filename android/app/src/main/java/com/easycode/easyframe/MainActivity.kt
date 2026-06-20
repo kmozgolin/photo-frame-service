@@ -104,9 +104,8 @@ class MainActivity : AppCompatActivity() {
         const val COLOR_WARM = 4
         const val COLOR_AUTO = 5
 
-        // Free donation page opened in the browser. Replace with your real link
-        // (Buy Me a Coffee / Ko-fi / PayPal.me / Boosty, etc.).
-        const val DONATION_URL = "https://www.buymeacoffee.com/easyframe"
+        // Free donation page opened in the browser.
+        const val DONATION_URL = "https://ko-fi.com/easycodefoundation"
     }
 
     private val colorWhite = Color.parseColor("#FAFAFA")
