@@ -662,7 +662,7 @@ class MainActivity : AppCompatActivity() {
 
         // Drawer handle + collapse apply only to the portrait bottom panel.
         panelHandle.visibility = if (portrait) View.VISIBLE else View.GONE
-        panelHandle.text = if (panelExpanded) "▾" else "▴"
+        panelHandle.text = if (panelExpanded) "▾  Свернуть" else "▴  Развернуть"
         val showControls = !portrait || panelExpanded
         controlsScroll.visibility = if (showControls) View.VISIBLE else View.GONE
 

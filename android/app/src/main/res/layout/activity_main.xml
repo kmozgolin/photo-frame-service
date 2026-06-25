@@ -57,6 +57,26 @@
 
         </LinearLayout>
 
+        <!-- Rotate button — floats over the photo (top-right), shown after load -->
+        <Button
+            android:id="@+id/btnRotate"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="16dp"
+            android:text="↻"
+            android:textSize="19sp"
+            android:textColor="@color/tHi"
+            android:background="@drawable/bg_fab_circle"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="0dp"
+            android:paddingVertical="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:stateListAnimator="@null"
+            android:visibility="gone" />
+
     </FrameLayout>
 
     <!-- PANEL — right in landscape, bottom in portrait (set at runtime) -->
@@ -71,16 +91,19 @@
         <!-- Drawer handle (portrait): tap to collapse/expand the controls -->
         <TextView
             android:id="@+id/panelHandle"
-            android:layout_width="match_parent"
-            android:layout_height="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_gravity="center_horizontal"
             android:gravity="center"
-            android:text="▾"
-            android:textSize="14sp"
-            android:textColor="@color/tMid"
-            android:background="?attr/selectableItemBackground"
+            android:text="▾  Свернуть"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/tHi"
+            android:background="@drawable/bg_auto_pill"
+            android:paddingHorizontal="20dp"
             android:clickable="true"
             android:focusable="true"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="10dp" />
 
         <!-- Upload button — top of panel, above all controls -->
         <Button
@@ -90,7 +113,7 @@
             android:text="Загрузить"
             android:textSize="12sp"
             android:textColor="@color/tMid"
-            android:background="@drawable/bg_auto_pill"
+            android:background="@drawable/bg_load_button"
             android:paddingHorizontal="14dp"
             android:paddingVertical="0dp"
             android:minWidth="0dp"
@@ -113,33 +136,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
-                <!-- Header row: rotate button (right), shown after a photo loads -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical|end"
-                    android:layout_marginBottom="10dp">
-
-                    <Button
-                        android:id="@+id/btnRotate"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:text="↻"
-                        android:textSize="17sp"
-                        android:textColor="@color/tMid"
-                        android:background="@drawable/bg_tool_circle"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:paddingHorizontal="0dp"
-                        android:paddingVertical="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:stateListAnimator="@null"
-                        android:visibility="gone" />
-
-                </LinearLayout>
 
                 <!-- Толщина (секция заголовок) -->
                 <TextView
@@ -166,55 +162,7 @@
                     android:background="@color/hairline"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Цвет (секция заголовок) -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="ЦВЕТ"
-                    android:textSize="10sp"
-                    android:textColor="@color/tLo"
-                    android:fontFamily="monospace"
-                    android:letterSpacing="0.08"
-                    android:layout_marginBottom="8dp" />
-
-                <!-- Active swatch + editable hex -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/bg_input_field"
-                    android:paddingHorizontal="10dp"
-                    android:layout_marginBottom="12dp">
-
-                    <View
-                        android:id="@+id/activeSwatch"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="10dp"
-                        android:background="@drawable/bg_swatch_selected" />
-
-                    <EditText
-                        android:id="@+id/hexInput"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@null"
-                        android:gravity="center_vertical"
-                        android:text="#FAFAFA"
-                        android:hint="#RRGGBB"
-                        android:textSize="14sp"
-                        android:textColor="@color/tHi"
-                        android:textColorHint="@color/tLo"
-                        android:fontFamily="monospace"
-                        android:inputType="textCapCharacters"
-                        android:maxLength="7"
-                        android:imeOptions="actionDone"
-                        android:importantForAutofill="no" />
-
-                </LinearLayout>
-
-                <!-- Tool row: wand (auto) + pipette + wheel -->
+                <!-- Colour tools: wand (auto) + pipette + wheel (above the colour field) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -278,7 +226,52 @@
                     android:textSize="11sp"
                     android:textColor="@color/tMid"
                     android:fontFamily="monospace"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Colour field: swatch + "Цвет" label + editable hex -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="10dp"
+                    android:layout_marginBottom="12dp">
+
+                    <View
+                        android:id="@+id/activeSwatch"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/bg_swatch_selected" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Цвет"
+                        android:textSize="14sp"
+                        android:textColor="@color/tMid"
+                        android:fontFamily="monospace" />
+
+                    <EditText
+                        android:id="@+id/hexInput"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:gravity="center_vertical|end"
+                        android:text="#FAFAFA"
+                        android:hint="#RRGGBB"
+                        android:textSize="14sp"
+                        android:textColor="@color/tHi"
+                        android:textColorHint="@color/tLo"
+                        android:fontFamily="monospace"
+                        android:inputType="textCapCharacters"
+                        android:maxLength="7"
+                        android:imeOptions="actionDone"
+                        android:importantForAutofill="no" />
+
+                </LinearLayout>
 
                 <!-- Opacity -->
                 <LinearLayout
