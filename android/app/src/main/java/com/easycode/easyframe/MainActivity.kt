@@ -206,7 +206,16 @@ class MainActivity : AppCompatActivity() {
         eyedropperOverlay.onFingerLifted = { }
 
         saveButton.isEnabled = false
-        btnColorWheel.post { drawColorWheelButton(btnColorWheel) }
+        // Draw the wheel once the button actually has a size (the panel may start hidden → width 0).
+        btnColorWheel.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(v: View, l: Int, t: Int, r: Int, b: Int,
+                                        ol: Int, ot: Int, or_: Int, ob: Int) {
+                if (v.width > 0) {
+                    v.removeOnLayoutChangeListener(this)
+                    drawColorWheelButton(btnColorWheel)
+                }
+            }
+        })
 
         setupHexInput()
         updateSwatchUI()
