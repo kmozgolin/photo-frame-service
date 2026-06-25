@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -40,6 +41,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var eyedropperOverlay: EyedropperOverlay
     private lateinit var dimensionsText: TextView
     private lateinit var btnRotate: Button
+
+    // Adaptive layout: preview + panel rearranged by orientation at runtime.
+    private lateinit var rootLayout: LinearLayout
+    private lateinit var previewArea: FrameLayout
+    private lateinit var panelArea: LinearLayout
 
     // Border thickness (2D pad + numeric fields)
     private lateinit var borderPad: BorderPadView
@@ -128,6 +134,10 @@ class MainActivity : AppCompatActivity() {
         dimensionsText    = findViewById(R.id.dimensionsText)
         btnRotate         = findViewById(R.id.btnRotate)
 
+        rootLayout        = findViewById(R.id.rootLayout)
+        previewArea       = findViewById(R.id.previewArea)
+        panelArea         = findViewById(R.id.panelArea)
+
         borderPad         = findViewById(R.id.borderPad)
         fieldSides        = findViewById(R.id.fieldSides)
         fieldTopBottom    = findViewById(R.id.fieldTopBottom)
@@ -206,6 +216,7 @@ class MainActivity : AppCompatActivity() {
         setupHexInput()
         updateSwatchUI()
         updateColorInfo()
+        applyOrientation(resources.configuration)
 
         loadButton.setOnClickListener      { openImagePicker() }
         emptyStateView.setOnClickListener  { openImagePicker() }
@@ -656,6 +667,34 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) { false }
             }
             showToast(if (ok) "Сохранено в Галерею → Framing" else "Не удалось сохранить")
+        }
+    }
+
+    // ── Adaptive orientation ────────────────────────────────────────────────
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyOrientation(newConfig)
+        // Preview area changes size → ZoomableImageView.onSizeChanged re-fits automatically.
+    }
+
+    // Landscape: preview left + panel as a fixed-width right column.
+    // Portrait:  preview top  + panel as a full-width bottom section.
+    private fun applyOrientation(config: Configuration) {
+        val portrait = config.orientation == Configuration.ORIENTATION_PORTRAIT
+        if (portrait) {
+            rootLayout.orientation = LinearLayout.VERTICAL
+            previewArea.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+            panelArea.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.15f)
+        } else {
+            val panelW = (286 * resources.displayMetrics.density).toInt()
+            rootLayout.orientation = LinearLayout.HORIZONTAL
+            previewArea.layoutParams = LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+            panelArea.layoutParams = LinearLayout.LayoutParams(
+                panelW, LinearLayout.LayoutParams.MATCH_PARENT)
         }
     }
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tablets (smallest width >= 600dp): keep the larger pad. -->
+    <dimen name="border_pad_height">190dp</dimen>
+</resources>

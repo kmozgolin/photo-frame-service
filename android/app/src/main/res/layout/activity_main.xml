@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:background="@color/canvas_bg">
 
-    <!-- PREVIEW AREA (LEFT, flex:1) -->
+    <!-- PREVIEW AREA — left in landscape, top in portrait (set at runtime) -->
     <FrameLayout
+        android:id="@+id/previewArea"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
@@ -79,8 +81,9 @@
 
     </FrameLayout>
 
-    <!-- PANEL (RIGHT, fixed 286dp) -->
+    <!-- PANEL — right in landscape, bottom in portrait (set at runtime) -->
     <LinearLayout
+        android:id="@+id/panelArea"
         android:layout_width="286dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -169,7 +172,7 @@
                 <com.easycode.easyframe.BorderPadView
                     android:id="@+id/borderPad"
                     android:layout_width="match_parent"
-                    android:layout_height="190dp"
+                    android:layout_height="@dimen/border_pad_height"
                     android:layout_marginBottom="10dp" />
 
                 <!-- Numeric fields: по бокам / верх-низ -->

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 2D border-thickness pad. Phone default = compact (~30% smaller). -->
+    <dimen name="border_pad_height">133dp</dimen>
+</resources>
