@@ -60,7 +60,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnAuto: Button
     private lateinit var btnEyedropper: Button
     private lateinit var btnColorWheel: Button
-    private lateinit var modeLabel: TextView
     private lateinit var opacitySlider: OpacitySliderView
     private lateinit var opacityValueText: TextView
 
@@ -78,11 +77,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var donateButton: TextView
     private lateinit var emptyStateView: View
-    private lateinit var swatchesRow: LinearLayout
-    private lateinit var dropperCard: View
-    private lateinit var dropperColorSwatch: View
-    private lateinit var dropperHexText: TextView
-    private lateinit var btnDropperConfirm: Button
 
     private var sourceBitmap: Bitmap? = null
     private var previewBitmap: Bitmap? = null
@@ -150,7 +144,6 @@ class MainActivity : AppCompatActivity() {
         btnAuto           = findViewById(R.id.btnAuto)
         btnEyedropper     = findViewById(R.id.btnEyedropper)
         btnColorWheel     = findViewById(R.id.btnColorWheel)
-        modeLabel         = findViewById(R.id.modeLabel)
         opacitySlider     = findViewById(R.id.opacitySlider)
         opacityValueText  = findViewById(R.id.opacityValueText)
 
@@ -168,11 +161,6 @@ class MainActivity : AppCompatActivity() {
 
         donateButton       = findViewById(R.id.donateButton)
         emptyStateView     = findViewById(R.id.emptyStateView)
-        swatchesRow        = findViewById(R.id.swatchesRow)
-        dropperCard        = findViewById(R.id.dropperCard)
-        dropperColorSwatch = findViewById(R.id.dropperColorSwatch)
-        dropperHexText     = findViewById(R.id.dropperHexText)
-        btnDropperConfirm  = findViewById(R.id.btnDropperConfirm)
 
         swatchWhite.setBackgroundColor(colorWhite)
         swatchDark.setBackgroundColor(colorDark)
@@ -199,11 +187,9 @@ class MainActivity : AppCompatActivity() {
 
         // ── Eyedropper overlay ──────────────────────────────────────────────
         eyedropperOverlay.zoomableView = previewImage
-        eyedropperOverlay.onColorChanged = { color ->
-            eyedropperActiveColor = color
-            updateDropperCard(color)
-        }
-        eyedropperOverlay.onFingerLifted = { }
+        // Track the colour live; apply it immediately when the finger lifts (no confirmation).
+        eyedropperOverlay.onColorChanged = { color -> eyedropperActiveColor = color }
+        eyedropperOverlay.onFingerLifted = { applyEyedropperColor() }
 
         saveButton.isEnabled = false
         // Draw the wheel once the button actually has a size (the panel may start hidden → width 0).
@@ -231,7 +217,6 @@ class MainActivity : AppCompatActivity() {
         // Auto (magic wand)
         btnAuto.setOnClickListener {
             val src = sourceBitmap ?: return@setOnClickListener
-            modeLabel.text = "Авто"
             autoColorJob?.cancel()
             autoColorJob = lifecycleScope.launch {
                 val color = withContext(Dispatchers.Default) { computeAutoColor(src) }
@@ -243,8 +228,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnEyedropper.setOnClickListener { modeLabel.text = "Пипетка"; showEyedropper() }
-        btnColorWheel.setOnClickListener { modeLabel.text = "Палитра"; openColorPicker() }
+        btnEyedropper.setOnClickListener { showEyedropper() }
+        btnColorWheel.setOnClickListener { openColorPicker() }
 
         swatchSelected.setOnClickListener     { selectColorMode(COLOR_CUSTOM) }
         swatchSelectedRing.setOnClickListener { selectColorMode(COLOR_CUSTOM) }
@@ -256,8 +241,7 @@ class MainActivity : AppCompatActivity() {
         swatchGrayRing.setOnClickListener     { selectColorMode(COLOR_GRAY) }
         swatchWarm.setOnClickListener         { selectColorMode(COLOR_WARM) }
         swatchWarmRing.setOnClickListener     { selectColorMode(COLOR_WARM) }
-        swatchPlus.setOnClickListener         { modeLabel.text = "Палитра"; openColorPicker() }
-        btnDropperConfirm.setOnClickListener  { confirmDropperColor() }
+        swatchPlus.setOnClickListener         { openColorPicker() }
 
         renderPreview()   // initial empty state: hide the controls panel until a photo is loaded
     }
@@ -289,7 +273,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun selectColorMode(mode: Int) {
         colorMode = mode
-        modeLabel.text = ""
         updateSwatchUI()
         updateColorInfo()
         renderPreview(keepZoom = true)
@@ -358,7 +341,6 @@ class MainActivity : AppCompatActivity() {
             btnRotate.visibility = View.VISIBLE
             renderPreview(keepZoom = false)
             // Auto-color on load
-            modeLabel.text = "Авто"
             autoColorJob?.cancel()
             autoColorJob = lifecycleScope.launch autoColor@{
                 val src = sourceBitmap ?: return@autoColor
@@ -442,33 +424,17 @@ class MainActivity : AppCompatActivity() {
     private fun showEyedropper() {
         if (previewBitmap == null) return
         eyedropperActiveColor = customColor
-        updateDropperCard(eyedropperActiveColor)
         eyedropperOverlay.visibility = View.VISIBLE
-        dropperCard.visibility       = View.VISIBLE
-        swatchesRow.visibility       = View.GONE
     }
 
-    private fun updateDropperCard(color: Int) {
-        dropperColorSwatch.background = GradientDrawable().apply {
-            setColor(color)
-            cornerRadius = 9f * resources.displayMetrics.density
-        }
-        dropperHexText.text = String.format("#%06X", 0xFFFFFF and color)
-    }
-
-    private fun confirmDropperColor() {
+    // Called when the finger lifts: apply the picked colour right away, no confirmation.
+    private fun applyEyedropperColor() {
+        eyedropperOverlay.visibility = View.GONE
         customColor = eyedropperActiveColor
         colorMode   = COLOR_CUSTOM
-        hideEyedropper()
         updateSwatchUI()
         updateColorInfo()
         renderPreview(keepZoom = true)
-    }
-
-    private fun hideEyedropper() {
-        eyedropperOverlay.visibility = View.GONE
-        dropperCard.visibility       = View.GONE
-        swatchesRow.visibility       = View.VISIBLE
     }
 
     // ── Color picker ──────────────────────────────────────────────────────────
@@ -485,7 +451,7 @@ class MainActivity : AppCompatActivity() {
                 updateColorInfo()
                 renderPreview(keepZoom = true)
             },
-            onEyedropperRequested = { modeLabel.text = "Пипетка"; showEyedropper() }
+            onEyedropperRequested = { showEyedropper() }
         ).show()
     }
 

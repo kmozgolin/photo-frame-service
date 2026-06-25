@@ -65,9 +65,13 @@
             android:layout_gravity="top|end"
             android:layout_margin="16dp"
             android:text="↻"
-            android:textSize="19sp"
+            android:textSize="22sp"
             android:textColor="@color/tHi"
-            android:background="@drawable/bg_fab_circle"
+            android:shadowColor="#CC000000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="8"
+            android:background="@android:color/transparent"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:paddingHorizontal="0dp"
@@ -162,71 +166,169 @@
                     android:background="@color/hairline"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Colour tools: wand (auto) + pipette + wheel (above the colour field) -->
-                <LinearLayout
+                <!-- Colour tools + presets in one scrollable row -->
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="4dp">
+                    android:scrollbars="none"
+                    android:layout_marginBottom="12dp">
 
-                    <!-- Auto (magic wand) -->
-                    <Button
-                        android:id="@+id/btnAuto"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_tool_circle"
-                        android:foreground="@drawable/ic_wand"
-                        android:foregroundGravity="center"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:stateListAnimator="@null"
-                        android:layout_marginEnd="8dp" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                    <!-- Pipette -->
-                    <Button
-                        android:id="@+id/btnEyedropper"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_tool_circle"
-                        android:foreground="@drawable/ic_pipette"
-                        android:foregroundGravity="center"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:stateListAnimator="@null"
-                        android:layout_marginEnd="8dp" />
+                        <!-- Auto (magic wand) -->
+                        <Button
+                            android:id="@+id/btnAuto"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tool_circle"
+                            android:foreground="@drawable/ic_wand"
+                            android:foregroundGravity="center"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:stateListAnimator="@null"
+                            android:layout_marginEnd="8dp" />
 
-                    <!-- Color wheel (ring-gradient, filled programmatically) -->
-                    <Button
-                        android:id="@+id/btnColorWheel"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:text=""
-                        android:background="@drawable/bg_tool_circle"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:paddingHorizontal="0dp"
-                        android:paddingVertical="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:stateListAnimator="@null" />
+                        <!-- Pipette -->
+                        <Button
+                            android:id="@+id/btnEyedropper"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tool_circle"
+                            android:foreground="@drawable/ic_pipette"
+                            android:foregroundGravity="center"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:stateListAnimator="@null"
+                            android:layout_marginEnd="8dp" />
 
-                </LinearLayout>
+                        <!-- Color wheel (ring-gradient, filled programmatically) -->
+                        <Button
+                            android:id="@+id/btnColorWheel"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:text=""
+                            android:background="@drawable/bg_tool_circle"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:paddingHorizontal="0dp"
+                            android:paddingVertical="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:stateListAnimator="@null"
+                            android:layout_marginEnd="14dp" />
 
-                <!-- Active mode label -->
-                <TextView
-                    android:id="@+id/modeLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:textSize="11sp"
-                    android:textColor="@color/tMid"
-                    android:fontFamily="monospace"
-                    android:layout_marginBottom="8dp" />
+                        <!-- Selected/custom colour swatch -->
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp">
+                            <View
+                                android:id="@+id/swatchSelectedRing"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_link_unlinked"
+                                android:visibility="visible" />
+                            <View
+                                android:id="@+id/swatchSelected"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_swatch_selected" />
+                        </FrameLayout>
+
+                        <!-- White -->
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp">
+                            <View
+                                android:id="@+id/swatchWhiteRing"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_link_unlinked"
+                                android:visibility="invisible" />
+                            <View
+                                android:id="@+id/swatchWhite"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_link_linked" />
+                        </FrameLayout>
+
+                        <!-- Dark -->
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp">
+                            <View
+                                android:id="@+id/swatchDarkRing"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_link_unlinked"
+                                android:visibility="invisible" />
+                            <View
+                                android:id="@+id/swatchDark"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_swatch_selected" />
+                        </FrameLayout>
+
+                        <!-- Gray -->
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp">
+                            <View
+                                android:id="@+id/swatchGrayRing"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_link_unlinked"
+                                android:visibility="invisible" />
+                            <View
+                                android:id="@+id/swatchGray"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_swatch_selected" />
+                        </FrameLayout>
+
+                        <!-- Warm -->
+                        <FrameLayout
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp">
+                            <View
+                                android:id="@+id/swatchWarmRing"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_link_unlinked"
+                                android:visibility="invisible" />
+                            <View
+                                android:id="@+id/swatchWarm"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_swatch_selected" />
+                        </FrameLayout>
+
+                        <!-- Plus (open colour picker) -->
+                        <View
+                            android:id="@+id/swatchPlus"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/bg_swatch_plus" />
+
+                    </LinearLayout>
+                </HorizontalScrollView>
 
                 <!-- Colour field: swatch + "Цвет" label + editable hex -->
                 <LinearLayout
@@ -306,169 +408,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="28dp"
                     android:layout_marginBottom="12dp" />
-
-        <!-- Dropper card: shown when eyedropper is active (replaces swatches) -->
-        <LinearLayout
-            android:id="@+id/dropperCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="6dp"
-            android:background="@drawable/bg_dropper_card"
-            android:visibility="gone"
-            android:layout_marginBottom="10dp">
-
-            <View
-                android:id="@+id/dropperColorSwatch"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="@drawable/bg_dropper_swatch" />
-
-            <TextView
-                android:id="@+id/dropperHexText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="#------"
-                android:textSize="14sp"
-                android:textColor="@color/tHi"
-                android:fontFamily="monospace"
-                android:textStyle="bold"
-                android:layout_marginStart="10dp" />
-
-            <Button
-                android:id="@+id/btnDropperConfirm"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:text="Взять"
-                android:textSize="13sp"
-                android:textColor="#101012"
-                android:background="@drawable/bg_save_button"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null" />
-
-        </LinearLayout>
-
-        <!-- Swatches row: 34dp circles -->
-        <LinearLayout
-            android:id="@+id/swatchesRow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
-
-            <!-- Selected/custom color swatch (34dp circle, dynamic color) -->
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp">
-                <!-- Double ring (outer ring) -->
-                <View
-                    android:id="@+id/swatchSelectedRing"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_link_unlinked"
-                    android:visibility="visible" />
-                <!-- Inner circle with 3dp inset to show ring gap -->
-                <View
-                    android:id="@+id/swatchSelected"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_swatch_selected" />
-            </FrameLayout>
-
-            <!-- White swatch -->
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp">
-                <View
-                    android:id="@+id/swatchWhiteRing"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_link_unlinked"
-                    android:visibility="invisible" />
-                <View
-                    android:id="@+id/swatchWhite"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_link_linked" />
-            </FrameLayout>
-
-            <!-- Dark swatch -->
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp">
-                <View
-                    android:id="@+id/swatchDarkRing"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_link_unlinked"
-                    android:visibility="invisible" />
-                <View
-                    android:id="@+id/swatchDark"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_swatch_selected" />
-            </FrameLayout>
-
-            <!-- Gray swatch -->
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp">
-                <View
-                    android:id="@+id/swatchGrayRing"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_link_unlinked"
-                    android:visibility="invisible" />
-                <View
-                    android:id="@+id/swatchGray"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_swatch_selected" />
-            </FrameLayout>
-
-            <!-- Warm swatch -->
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginEnd="6dp">
-                <View
-                    android:id="@+id/swatchWarmRing"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_link_unlinked"
-                    android:visibility="invisible" />
-                <View
-                    android:id="@+id/swatchWarm"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_swatch_selected" />
-            </FrameLayout>
-
-            <!-- Plus swatch (open color picker) -->
-            <View
-                android:id="@+id/swatchPlus"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:background="@drawable/bg_swatch_plus" />
-
-        </LinearLayout>
 
                 <!-- Donate link (opens external page; no permission needed) -->
                 <TextView
