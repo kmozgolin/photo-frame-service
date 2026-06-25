@@ -19,14 +19,12 @@
             android:id="@+id/previewImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="30dp"
             android:contentDescription="Превью" />
 
         <com.easycode.easyframe.EyedropperOverlay
             android:id="@+id/eyedropperOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="30dp"
             android:visibility="gone" />
 
         <!-- Empty state: shown until a photo is loaded -->
@@ -35,7 +33,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="30dp"
             android:orientation="vertical"
             android:gravity="center"
             android:padding="32dp"
@@ -60,25 +57,6 @@
 
         </LinearLayout>
 
-        <!-- Dimensions status bar -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_gravity="bottom"
-            android:background="@color/statusbar_bg"
-            android:paddingHorizontal="14dp"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/dimensionsText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Фото не загружено"
-                android:textSize="11sp"
-                android:textColor="@color/tLo"
-                android:fontFamily="monospace" />
-        </LinearLayout>
-
     </FrameLayout>
 
     <!-- PANEL — right in landscape, bottom in portrait (set at runtime) -->
@@ -89,6 +67,20 @@
         android:orientation="vertical"
         android:background="@color/panel_bg"
         android:padding="14dp">
+
+        <!-- Drawer handle (portrait): tap to collapse/expand the controls -->
+        <TextView
+            android:id="@+id/panelHandle"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:gravity="center"
+            android:text="▾"
+            android:textSize="14sp"
+            android:textColor="@color/tMid"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="6dp" />
 
         <!-- Upload button — top of panel, above all controls -->
         <Button
@@ -110,6 +102,7 @@
 
         <!-- Scrollable controls -->
         <ScrollView
+            android:id="@+id/controlsScroll"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -121,22 +114,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Header: "Рамка" + rotate -->
+                <!-- Header row: rotate button (right), shown after a photo loads -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
+                    android:gravity="center_vertical|end"
                     android:layout_marginBottom="10dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Рамка"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/tHi" />
 
                     <Button
                         android:id="@+id/btnRotate"
@@ -173,86 +157,7 @@
                     android:id="@+id/borderPad"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/border_pad_height"
-                    android:layout_marginBottom="10dp" />
-
-                <!-- Numeric fields: по бокам / верх-низ -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="14dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="6dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="↔ по бокам"
-                            android:textSize="10sp"
-                            android:textColor="@color/tLo"
-                            android:fontFamily="monospace"
-                            android:layout_marginBottom="4dp" />
-
-                        <EditText
-                            android:id="@+id/fieldSides"
-                            android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_input_field"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="12dp"
-                            android:text="30"
-                            android:textSize="16sp"
-                            android:textColor="@color/tHi"
-                            android:textStyle="bold"
-                            android:fontFamily="monospace"
-                            android:inputType="number"
-                            android:maxLength="4"
-                            android:imeOptions="actionDone"
-                            android:importantForAutofill="no" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="6dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="↕ верх / низ"
-                            android:textSize="10sp"
-                            android:textColor="@color/tLo"
-                            android:fontFamily="monospace"
-                            android:layout_marginBottom="4dp" />
-
-                        <EditText
-                            android:id="@+id/fieldTopBottom"
-                            android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_input_field"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="12dp"
-                            android:text="30"
-                            android:textSize="16sp"
-                            android:textColor="@color/tHi"
-                            android:textStyle="bold"
-                            android:fontFamily="monospace"
-                            android:inputType="number"
-                            android:maxLength="4"
-                            android:imeOptions="actionDone"
-                            android:importantForAutofill="no" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
+                    android:layout_marginBottom="14dp" />
 
                 <!-- Hairline divider -->
                 <View

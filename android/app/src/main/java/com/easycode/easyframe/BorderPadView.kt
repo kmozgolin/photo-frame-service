@@ -72,6 +72,11 @@ class BorderPadView @JvmOverloads constructor(
         color = Color.parseColor("#16161A")
         style = Paint.Style.FILL
     }
+    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#CCFFFFFF")
+        textSize = 11f * dp
+        typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+    }
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)   // for handle shadow
@@ -116,6 +121,12 @@ class BorderPadView @JvmOverloads constructor(
         // Handle
         canvas.drawCircle(hx, hy, handleR, handleFill)
         canvas.drawCircle(hx, hy, handleR * 0.42f, handleInner)
+
+        // Axis-coordinate readouts: ↕ vertical (top/bottom) at top-left, ↔ horizontal (sides) at bottom-right.
+        labelPaint.textAlign = Paint.Align.LEFT
+        canvas.drawText("↕ $topBottom", left + 6f * dp, top + 15f * dp, labelPaint)
+        labelPaint.textAlign = Paint.Align.RIGHT
+        canvas.drawText("↔ $sides", right - 6f * dp, bottom - 7f * dp, labelPaint)
     }
 
     private fun applyFromPointer(px: Float, py: Float, dragging: Boolean) {

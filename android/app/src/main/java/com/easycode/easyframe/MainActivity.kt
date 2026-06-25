@@ -40,7 +40,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var saveButton: Button
     private lateinit var previewImage: ZoomableImageView
     private lateinit var eyedropperOverlay: EyedropperOverlay
-    private lateinit var dimensionsText: TextView
     private lateinit var btnRotate: Button
 
     // Adaptive layout: preview + panel rearranged by orientation at runtime.
@@ -48,11 +47,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previewArea: FrameLayout
     private lateinit var panelArea: LinearLayout
     private lateinit var bottomBar: LinearLayout
+    private lateinit var panelHandle: TextView
+    private lateinit var controlsScroll: View
+    private var panelExpanded = true
 
     // Border thickness (2D pad + numeric fields)
     private lateinit var borderPad: BorderPadView
-    private lateinit var fieldSides: EditText
-    private lateinit var fieldTopBottom: EditText
 
     // Color
     private lateinit var activeSwatch: View
@@ -133,17 +133,17 @@ class MainActivity : AppCompatActivity() {
         saveButton        = findViewById(R.id.saveButton)
         previewImage      = findViewById(R.id.previewImage)
         eyedropperOverlay = findViewById(R.id.eyedropperOverlay)
-        dimensionsText    = findViewById(R.id.dimensionsText)
         btnRotate         = findViewById(R.id.btnRotate)
 
         rootLayout        = findViewById(R.id.rootLayout)
         previewArea       = findViewById(R.id.previewArea)
         panelArea         = findViewById(R.id.panelArea)
         bottomBar         = findViewById(R.id.bottomBar)
+        panelHandle       = findViewById(R.id.panelHandle)
+        controlsScroll    = findViewById(R.id.controlsScroll)
+        panelHandle.setOnClickListener { togglePanel() }
 
         borderPad         = findViewById(R.id.borderPad)
-        fieldSides        = findViewById(R.id.fieldSides)
-        fieldTopBottom    = findViewById(R.id.fieldTopBottom)
 
         activeSwatch      = findViewById(R.id.activeSwatch)
         hexInput          = findViewById(R.id.hexInput)
@@ -179,22 +179,14 @@ class MainActivity : AppCompatActivity() {
         swatchGray.setBackgroundColor(colorGray)
         swatchWarm.setBackgroundColor(colorWarm)
 
-        // ── 2D pad ──────────────────────────────────────────────────────────
+        // ── 2D pad (shows sides / top-bottom as axis coordinates) ───────────
         borderPad.maxValue = maxBorder
         borderPad.sides = borderSides
         borderPad.topBottom = borderTopBottom
         borderPad.onValuesChanged = { s, tb, dragging ->
             borderSides = s; borderTopBottom = tb
-            isSyncing = true
-            fieldSides.setText(s.toString())
-            fieldTopBottom.setText(tb.toString())
-            isSyncing = false
-            updateDimensionsText()
             if (!dragging) renderPreview(keepZoom = true)
         }
-
-        setupNumberField(fieldSides, isSides = true)
-        setupNumberField(fieldTopBottom, isSides = false)
 
         // ── Opacity ─────────────────────────────────────────────────────────
         opacitySlider.value = frameOpacity
@@ -219,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         setupHexInput()
         updateSwatchUI()
         updateColorInfo()
-        applyOrientation(resources.configuration)
+        layoutPanel()
 
         loadButton.setOnClickListener      { openImagePicker() }
         emptyStateView.setOnClickListener  { openImagePicker() }
@@ -257,25 +249,8 @@ class MainActivity : AppCompatActivity() {
         swatchWarmRing.setOnClickListener     { selectColorMode(COLOR_WARM) }
         swatchPlus.setOnClickListener         { modeLabel.text = "Палитра"; openColorPicker() }
         btnDropperConfirm.setOnClickListener  { confirmDropperColor() }
-    }
 
-    // ── Numeric fields (independent, no magnet) ─────────────────────────────
-
-    private fun setupNumberField(field: EditText, isSides: Boolean) {
-        field.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (isSyncing) return
-                val v = s?.toString()?.toIntOrNull() ?: return
-                val cv = v.coerceIn(0, maxBorder)
-                if (isSides) borderSides = cv else borderTopBottom = cv
-                // reflect on pad without snapping or re-triggering this watcher
-                if (isSides) borderPad.sides = cv else borderPad.topBottom = cv
-                updateDimensionsText()
-                renderPreview(keepZoom = true)
-            }
-            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
-            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
-        })
+        renderPreview()   // initial empty state: hide the controls panel until a photo is loaded
     }
 
     // ── Editable hex ────────────────────────────────────────────────────────
@@ -420,11 +395,12 @@ class MainActivity : AppCompatActivity() {
         val source = sourceBitmap ?: run {
             previewImage.setImageDrawable(null)
             saveButton.isEnabled = false
-            dimensionsText.text = "Фото не загружено"
             emptyStateView.visibility = View.VISIBLE
+            panelArea.visibility = View.GONE   // no photo → no controls, just the load prompt
             return
         }
         emptyStateView.visibility = View.GONE
+        panelArea.visibility = View.VISIBLE
         val borderH    = borderSides       // width padding (left/right)
         val borderV    = borderTopBottom   // height padding (top/bottom)
         val frameColor = applyAlpha(resolveFrameColor(), frameOpacity)
@@ -449,15 +425,7 @@ class MainActivity : AppCompatActivity() {
             previewBitmap = bitmap
             old?.recycle()
             saveButton.isEnabled = true
-            dimensionsText.text = "${bitmap.width} × ${bitmap.height} px"
         }
-    }
-
-    private fun updateDimensionsText() {
-        val source = sourceBitmap ?: return
-        val w = source.width + borderSides * 2
-        val h = source.height + borderTopBottom * 2
-        dimensionsText.text = "$w × $h px"
     }
 
     // ── Eyedropper ──────────────────────────────────────────────────────────
@@ -677,20 +645,36 @@ class MainActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        applyOrientation(newConfig)
+        layoutPanel()
         // Preview area changes size → ZoomableImageView.onSizeChanged re-fits automatically.
     }
 
-    // Landscape: preview left + panel as a fixed-width right column.
-    // Portrait:  preview top  + panel as a full-width bottom section.
-    private fun applyOrientation(config: Configuration) {
+    private fun togglePanel() {
+        panelExpanded = !panelExpanded
+        layoutPanel()
+    }
+
+    // Arranges preview + panel by orientation, and collapses/expands the portrait drawer.
+    private fun layoutPanel() {
+        val config = resources.configuration
         val portrait = config.orientation == Configuration.ORIENTATION_PORTRAIT
+        val isPhone = config.smallestScreenWidthDp < 600
+
+        // Drawer handle + collapse apply only to the portrait bottom panel.
+        panelHandle.visibility = if (portrait) View.VISIBLE else View.GONE
+        panelHandle.text = if (panelExpanded) "▾" else "▴"
+        val showControls = !portrait || panelExpanded
+        controlsScroll.visibility = if (showControls) View.VISIBLE else View.GONE
+
         if (portrait) {
             rootLayout.orientation = LinearLayout.VERTICAL
             previewArea.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
-            panelArea.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.15f)
+            panelArea.layoutParams = if (panelExpanded)
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.15f)
+            else
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         } else {
             val panelW = (286 * resources.displayMetrics.density).toInt()
             rootLayout.orientation = LinearLayout.HORIZONTAL
@@ -700,7 +684,6 @@ class MainActivity : AppCompatActivity() {
                 panelW, LinearLayout.LayoutParams.MATCH_PARENT)
         }
         // Merge Load+Save into the bottom bar everywhere except the wide tablet side panel.
-        val isPhone = config.smallestScreenWidthDp < 600
         arrangeButtons(merge = portrait || isPhone)
     }
 
@@ -718,7 +701,7 @@ class MainActivity : AppCompatActivity() {
             loadButton.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, (40 * d).toInt()
             ).apply { bottomMargin = (12 * d).toInt() }
-            panelArea.addView(loadButton, 0)
+            panelArea.addView(loadButton, 1)   // after the drawer handle (index 0)
         }
     }
 
