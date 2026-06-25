@@ -591,22 +591,31 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- Save button: 48dp, 14dp radius, white bg -->
-        <Button
-            android:id="@+id/saveButton"
+        <!-- Bottom action bar: Save (Load joins it in portrait, 50/50) -->
+        <LinearLayout
+            android:id="@+id/bottomBar"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Сохранить"
-            android:textSize="14sp"
-            android:textColor="@color/canvas_bg"
-            android:textStyle="bold"
-            android:background="@drawable/bg_save_button"
-            android:enabled="false"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:stateListAnimator="@null" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/saveButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Сохранить"
+                android:textSize="14sp"
+                android:textColor="@color/canvas_bg"
+                android:textStyle="bold"
+                android:background="@drawable/bg_save_button"
+                android:enabled="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

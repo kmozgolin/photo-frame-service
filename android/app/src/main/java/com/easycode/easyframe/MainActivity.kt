@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rootLayout: LinearLayout
     private lateinit var previewArea: FrameLayout
     private lateinit var panelArea: LinearLayout
+    private lateinit var bottomBar: LinearLayout
 
     // Border thickness (2D pad + numeric fields)
     private lateinit var borderPad: BorderPadView
@@ -137,6 +139,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout        = findViewById(R.id.rootLayout)
         previewArea       = findViewById(R.id.previewArea)
         panelArea         = findViewById(R.id.panelArea)
+        bottomBar         = findViewById(R.id.bottomBar)
 
         borderPad         = findViewById(R.id.borderPad)
         fieldSides        = findViewById(R.id.fieldSides)
@@ -695,6 +698,27 @@ class MainActivity : AppCompatActivity() {
                 0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
             panelArea.layoutParams = LinearLayout.LayoutParams(
                 panelW, LinearLayout.LayoutParams.MATCH_PARENT)
+        }
+        // Merge Load+Save into the bottom bar everywhere except the wide tablet side panel.
+        val isPhone = config.smallestScreenWidthDp < 600
+        arrangeButtons(merge = portrait || isPhone)
+    }
+
+    // merge=true → Load sits next to Save (50/50) in the bottom bar.
+    // merge=false → Load is a full-width button at the top of the panel.
+    private fun arrangeButtons(merge: Boolean) {
+        val d = resources.displayMetrics.density
+        (loadButton.parent as? ViewGroup)?.removeView(loadButton)
+        if (merge) {
+            loadButton.layoutParams = LinearLayout.LayoutParams(0, (48 * d).toInt(), 1f).apply {
+                setMarginEnd((8 * d).toInt())
+            }
+            bottomBar.addView(loadButton, 0)
+        } else {
+            loadButton.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, (40 * d).toInt()
+            ).apply { bottomMargin = (12 * d).toInt() }
+            panelArea.addView(loadButton, 0)
         }
     }
 
