@@ -6,8 +6,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 
-// Horizontal transparency slider (0..1). Track shows a checkerboard with a transparent→solid
-// gradient of the current frame color, so the thumb position reads as "how opaque".
+// Vertical transparency slider (0..1). Track shows a checkerboard with a transparent→solid
+// gradient of the current frame colour; top = fully opaque, bottom = fully transparent.
 class OpacitySliderView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs) {
@@ -22,7 +22,7 @@ class OpacitySliderView @JvmOverloads constructor(
     var onValueChanged: ((Float, Boolean) -> Unit)? = null
 
     private val dp = context.resources.displayMetrics.density
-    private val trackH = 10f * dp
+    private val trackW = 10f * dp
     private val thumbR = 9f * dp
 
     private val checkPaint = Paint()
@@ -32,7 +32,6 @@ class OpacitySliderView @JvmOverloads constructor(
         setShadowLayer(6f, 0f, 2f, Color.argb(128, 0, 0, 0))
     }
     private var gradientDirty = true
-    private var checkerShader: BitmapShader? = null
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)
@@ -48,47 +47,47 @@ class OpacitySliderView @JvmOverloads constructor(
         val p = Paint().apply { color = light }
         c.drawRect(0f, 0f, s.toFloat(), s.toFloat(), p)
         c.drawRect(s.toFloat(), s.toFloat(), (s * 2).toFloat(), (s * 2).toFloat(), p)
-        checkerShader = BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
-        checkPaint.shader = checkerShader
+        checkPaint.shader = BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) { gradientDirty = true }
 
     private fun ensureGradient() {
-        if (!gradientDirty || width == 0) return
+        if (!gradientDirty || height == 0) return
         val transp = Color.argb(0, Color.red(color), Color.green(color), Color.blue(color))
+        // top (thumbR) = opaque colour, bottom (height-thumbR) = transparent
         gradPaint.shader = LinearGradient(
-            thumbR, 0f, width - thumbR, 0f, transp, color, Shader.TileMode.CLAMP
+            0f, thumbR, 0f, height - thumbR, color, transp, Shader.TileMode.CLAMP
         )
         gradientDirty = false
     }
 
     override fun onDraw(canvas: Canvas) {
         ensureGradient()
-        val cy = height / 2f
-        val r = trackH / 2f
-        val l = thumbR; val rt = width - thumbR
-        // Checkerboard, then color gradient over it
-        canvas.drawRoundRect(l, cy - r, rt, cy + r, r, r, checkPaint)
-        canvas.drawRoundRect(l, cy - r, rt, cy + r, r, r, gradPaint)
+        val cx = width / 2f
+        val r = trackW / 2f
+        val top = thumbR; val bottom = height - thumbR
+        // Checkerboard, then colour gradient over it (vertical track)
+        canvas.drawRoundRect(cx - r, top, cx + r, bottom, r, r, checkPaint)
+        canvas.drawRoundRect(cx - r, top, cx + r, bottom, r, r, gradPaint)
 
-        val usableW = width - thumbR * 2
-        val thumbX = (thumbR + value * usableW).coerceIn(thumbR, width - thumbR)
-        canvas.drawCircle(thumbX, cy, thumbR, thumbPaint)
+        val usableH = height - thumbR * 2
+        val thumbY = (thumbR + (1f - value) * usableH).coerceIn(thumbR, height - thumbR)
+        canvas.drawCircle(cx, thumbY, thumbR, thumbPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val usableW = width - thumbR * 2
+        val usableH = height - thumbR * 2
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 parent?.requestDisallowInterceptTouchEvent(true)
-                value = ((event.x - thumbR) / usableW).coerceIn(0f, 1f)
+                value = (1f - (event.y - thumbR) / usableH).coerceIn(0f, 1f)
                 onValueChanged?.invoke(value, true)
                 return true
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 parent?.requestDisallowInterceptTouchEvent(false)
-                value = ((event.x - thumbR) / usableW).coerceIn(0f, 1f)
+                value = (1f - (event.y - thumbR) / usableH).coerceIn(0f, 1f)
                 onValueChanged?.invoke(value, false)
                 return true
             }
