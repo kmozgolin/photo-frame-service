@@ -6,6 +6,8 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -16,8 +18,10 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -42,14 +46,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var eyedropperOverlay: EyedropperOverlay
     private lateinit var btnRotate: Button
 
-    // Adaptive layout: preview + panel rearranged by orientation at runtime.
+    // Adaptive layout: toolbar always on top; contentArea flips orientation for landscape.
     private lateinit var rootLayout: LinearLayout
+    private lateinit var contentArea: LinearLayout
     private lateinit var previewArea: FrameLayout
     private lateinit var panelArea: LinearLayout
-    private lateinit var bottomBar: LinearLayout
-    private lateinit var panelHandle: TextView
+    private lateinit var panelHandle: View
     private lateinit var controlsScroll: View
     private var panelExpanded = true
+    private var isAnimating = false
 
     // Border thickness (2D pad + numeric fields)
     private lateinit var borderPad: BorderPadView
@@ -130,12 +135,12 @@ class MainActivity : AppCompatActivity() {
         btnRotate         = findViewById(R.id.btnRotate)
 
         rootLayout        = findViewById(R.id.rootLayout)
+        contentArea       = findViewById(R.id.contentArea)
         previewArea       = findViewById(R.id.previewArea)
         panelArea         = findViewById(R.id.panelArea)
-        bottomBar         = findViewById(R.id.bottomBar)
         panelHandle       = findViewById(R.id.panelHandle)
         controlsScroll    = findViewById(R.id.controlsScroll)
-        panelHandle.setOnClickListener { togglePanel() }
+        setupPanelHandleTouch()
 
         borderPad         = findViewById(R.id.borderPad)
 
@@ -173,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         borderPad.topBottom = borderTopBottom
         borderPad.onValuesChanged = { s, tb, dragging ->
             borderSides = s; borderTopBottom = tb
-            if (!dragging) renderPreview(keepZoom = true)
+            if (!dragging) renderPreview(keepZoom = false)
         }
 
         // ── Opacity ─────────────────────────────────────────────────────────
@@ -625,58 +630,102 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun togglePanel() {
-        panelExpanded = !panelExpanded
-        layoutPanel()
+        if (panelExpanded) collapseSheet() else expandSheet()
     }
 
-    // Arranges preview + panel by orientation, and collapses/expands the portrait drawer.
+    private fun expandSheet() {
+        if (panelExpanded || isAnimating) return
+        panelExpanded = true
+        isAnimating = true
+        // Push panel off screen before revealing controls so layout recalc happens hidden.
+        panelArea.translationY = 2000f
+        controlsScroll.visibility = View.VISIBLE
+        controlsScroll.post {
+            val h = controlsScroll.height.toFloat()
+            panelArea.translationY = h
+            panelArea.animate()
+                .translationY(0f)
+                .setDuration(250)
+                .setInterpolator(DecelerateInterpolator())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) { isAnimating = false }
+                })
+                .start()
+        }
+    }
+
+    private fun collapseSheet() {
+        if (!panelExpanded || isAnimating) return
+        panelExpanded = false
+        isAnimating = true
+        val h = controlsScroll.height.toFloat()
+        panelArea.animate()
+            .translationY(h)
+            .setDuration(250)
+            .setInterpolator(DecelerateInterpolator())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    controlsScroll.visibility = View.GONE
+                    panelArea.translationY = 0f
+                    isAnimating = false
+                }
+            })
+            .start()
+    }
+
+    private fun setupPanelHandleTouch() {
+        val density = resources.displayMetrics.density
+        val tapThreshold = 10 * density
+        val swipeThreshold = 20 * density
+        var startY = 0f
+        panelHandle.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> { startY = event.rawY; true }
+                MotionEvent.ACTION_MOVE -> true
+                MotionEvent.ACTION_UP -> {
+                    val dy = event.rawY - startY
+                    when {
+                        dy < -swipeThreshold && !panelExpanded -> expandSheet()
+                        dy > swipeThreshold && panelExpanded   -> collapseSheet()
+                        Math.abs(dy) < tapThreshold            -> togglePanel()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    // Arranges preview + panel by orientation.
+    // Portrait: contentArea vertical, panel is a bottom sheet with grab handle.
+    // Landscape: contentArea horizontal, panel is a side column (no collapse).
     private fun layoutPanel() {
         val config = resources.configuration
         val portrait = config.orientation == Configuration.ORIENTATION_PORTRAIT
-        val isPhone = config.smallestScreenWidthDp < 600
 
-        // Drawer handle + collapse apply only to the portrait bottom panel.
         panelHandle.visibility = if (portrait) View.VISIBLE else View.GONE
-        panelHandle.text = if (panelExpanded) "▾  Свернуть" else "▴  Развернуть"
-        val showControls = !portrait || panelExpanded
-        controlsScroll.visibility = if (showControls) View.VISIBLE else View.GONE
 
         if (portrait) {
-            rootLayout.orientation = LinearLayout.VERTICAL
+            contentArea.orientation = LinearLayout.VERTICAL
             previewArea.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
-            panelArea.layoutParams = if (panelExpanded)
-                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.15f)
-            else
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            panelArea.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            controlsScroll.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            if (!panelExpanded) controlsScroll.visibility = View.GONE
         } else {
+            // Landscape/tablet: side panel, always expanded
             val panelW = (286 * resources.displayMetrics.density).toInt()
-            rootLayout.orientation = LinearLayout.HORIZONTAL
+            contentArea.orientation = LinearLayout.HORIZONTAL
             previewArea.layoutParams = LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
             panelArea.layoutParams = LinearLayout.LayoutParams(
                 panelW, LinearLayout.LayoutParams.MATCH_PARENT)
-        }
-        // Merge Load+Save into the bottom bar everywhere except the wide tablet side panel.
-        arrangeButtons(merge = portrait || isPhone)
-    }
-
-    // merge=true → Load sits next to Save (50/50) in the bottom bar.
-    // merge=false → Load is a full-width button at the top of the panel.
-    private fun arrangeButtons(merge: Boolean) {
-        val d = resources.displayMetrics.density
-        (loadButton.parent as? ViewGroup)?.removeView(loadButton)
-        if (merge) {
-            loadButton.layoutParams = LinearLayout.LayoutParams(0, (48 * d).toInt(), 1f).apply {
-                setMarginEnd((8 * d).toInt())
-            }
-            bottomBar.addView(loadButton, 0)
-        } else {
-            loadButton.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, (40 * d).toInt()
-            ).apply { bottomMargin = (12 * d).toInt() }
-            panelArea.addView(loadButton, 1)   // after the drawer handle (index 0)
+            panelExpanded = true
+            controlsScroll.visibility = View.VISIBLE
+            controlsScroll.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
         }
     }
 

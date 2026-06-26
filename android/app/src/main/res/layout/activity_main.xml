@@ -1,77 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:background="@color/canvas_bg">
 
-    <!-- PREVIEW AREA — left in landscape, top in portrait (set at runtime) -->
-    <FrameLayout
-        android:id="@+id/previewArea"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/canvas_bg">
+    <!-- ─── Top toolbar: [Load] · · · [Rotate] [Save] ──────────────────────── -->
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="10dp">
 
-        <com.easycode.easyframe.ZoomableImageView
-            android:id="@+id/previewImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="Превью" />
-
-        <com.easycode.easyframe.EyedropperOverlay
-            android:id="@+id/eyedropperOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-
-        <!-- Empty state: shown until a photo is loaded -->
-        <LinearLayout
-            android:id="@+id/emptyStateView"
+        <Button
+            android:id="@+id/loadButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="32dp"
-            android:background="@drawable/bg_empty_state"
-            android:clickable="true"
-            android:focusable="true">
+            android:layout_height="38dp"
+            android:text="Загрузить"
+            android:textSize="13sp"
+            android:textColor="@color/tMid"
+            android:background="@drawable/bg_load_button"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:stateListAnimator="@null" />
 
-            <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_download"
-                android:contentDescription="Загрузить"
-                android:layout_marginBottom="10dp" />
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Загрузить"
-                android:textSize="13sp"
-                android:textColor="@color/tMid"
-                android:fontFamily="monospace" />
-
-        </LinearLayout>
-
-        <!-- Rotate button — floats over the photo (top-right), shown after load -->
         <Button
             android:id="@+id/btnRotate"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_gravity="top|end"
-            android:layout_margin="16dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:text="↻"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:textColor="@color/tHi"
-            android:shadowColor="#CC000000"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="8"
-            android:background="@android:color/transparent"
+            android:background="@drawable/bg_load_button"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:paddingHorizontal="0dp"
@@ -79,386 +54,423 @@
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:stateListAnimator="@null"
+            android:layout_marginEnd="8dp"
             android:visibility="gone" />
 
-    </FrameLayout>
-
-    <!-- PANEL — right in landscape, bottom in portrait (set at runtime) -->
-    <LinearLayout
-        android:id="@+id/panelArea"
-        android:layout_width="286dp"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/panel_bg"
-        android:padding="14dp">
-
-        <!-- Drawer handle (portrait): tap to collapse/expand the controls -->
-        <TextView
-            android:id="@+id/panelHandle"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:text="▾  Свернуть"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:textColor="@color/tHi"
-            android:background="@drawable/bg_auto_pill"
-            android:paddingHorizontal="20dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_marginBottom="10dp" />
-
-        <!-- Upload button — top of panel, above all controls -->
         <Button
-            android:id="@+id/loadButton"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:text="Загрузить"
-            android:textSize="12sp"
-            android:textColor="@color/tMid"
-            android:background="@drawable/bg_load_button"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="0dp"
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:text="Сохранить"
+            android:textSize="13sp"
+            android:textColor="@color/canvas_bg"
+            android:textStyle="bold"
+            android:background="@drawable/bg_save_button"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:enabled="false"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:stateListAnimator="@null"
-            android:layout_marginBottom="12dp" />
+            android:stateListAnimator="@null" />
 
-        <!-- Scrollable controls -->
-        <ScrollView
-            android:id="@+id/controlsScroll"
+    </LinearLayout>
+
+    <!-- ─── Content: preview + bottom sheet (orientation changed at runtime) ── -->
+    <LinearLayout
+        android:id="@+id/contentArea"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Preview area (fills remaining space) -->
+        <FrameLayout
+            android:id="@+id/previewArea"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:scrollbars="none"
-            android:fillViewport="true">
+            android:background="@color/canvas_bg">
 
-            <LinearLayout
+            <com.easycode.easyframe.ZoomableImageView
+                android:id="@+id/previewImage"
                 android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Превью" />
+
+            <com.easycode.easyframe.EyedropperOverlay
+                android:id="@+id/eyedropperOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <!-- Empty state: shown until a photo is loaded -->
+            <LinearLayout
+                android:id="@+id/emptyStateView"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:background="@drawable/bg_empty_state"
+                android:clickable="true"
+                android:focusable="true">
 
-                <!-- Толщина (секция заголовок) -->
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_download"
+                    android:contentDescription="Загрузить"
+                    android:layout_marginBottom="10dp" />
+
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ТОЛЩИНА"
-                    android:textSize="10sp"
-                    android:textColor="@color/tLo"
-                    android:fontFamily="monospace"
-                    android:letterSpacing="0.08"
-                    android:layout_marginBottom="8dp" />
-
-                <!-- Thickness pad (left) + vertical opacity slider (right) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/border_pad_height"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="14dp">
-
-                    <com.easycode.easyframe.BorderPadView
-                        android:id="@+id/borderPad"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="10dp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal">
-
-                        <TextView
-                            android:id="@+id/opacityValueText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="100%"
-                            android:textSize="10sp"
-                            android:textColor="@color/tMid"
-                            android:fontFamily="monospace"
-                            android:layout_marginBottom="4dp" />
-
-                        <com.easycode.easyframe.OpacitySliderView
-                            android:id="@+id/opacitySlider"
-                            android:layout_width="30dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="прозр."
-                            android:textSize="9sp"
-                            android:textColor="@color/tLo"
-                            android:fontFamily="monospace"
-                            android:layout_marginTop="4dp" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- Hairline divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@color/hairline"
-                    android:layout_marginBottom="12dp" />
-
-                <!-- Colour tools + presets in one scrollable row -->
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scrollbars="none"
-                    android:layout_marginBottom="12dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <!-- Auto (magic wand) -->
-                        <Button
-                            android:id="@+id/btnAuto"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_tool_circle"
-                            android:foreground="@drawable/ic_wand"
-                            android:foregroundGravity="center"
-                            android:minWidth="0dp"
-                            android:minHeight="0dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:stateListAnimator="@null"
-                            android:layout_marginEnd="8dp" />
-
-                        <!-- Pipette -->
-                        <Button
-                            android:id="@+id/btnEyedropper"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_tool_circle"
-                            android:foreground="@drawable/ic_pipette"
-                            android:foregroundGravity="center"
-                            android:minWidth="0dp"
-                            android:minHeight="0dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:stateListAnimator="@null"
-                            android:layout_marginEnd="8dp" />
-
-                        <!-- Color wheel (ring-gradient, filled programmatically) -->
-                        <Button
-                            android:id="@+id/btnColorWheel"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:text=""
-                            android:background="@drawable/bg_tool_circle"
-                            android:minWidth="0dp"
-                            android:minHeight="0dp"
-                            android:paddingHorizontal="0dp"
-                            android:paddingVertical="0dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:stateListAnimator="@null"
-                            android:layout_marginEnd="14dp" />
-
-                        <!-- Selected/custom colour swatch -->
-                        <FrameLayout
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp">
-                            <View
-                                android:id="@+id/swatchSelectedRing"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@drawable/bg_link_unlinked"
-                                android:visibility="visible" />
-                            <View
-                                android:id="@+id/swatchSelected"
-                                android:layout_width="26dp"
-                                android:layout_height="26dp"
-                                android:layout_gravity="center"
-                                android:background="@drawable/bg_swatch_selected" />
-                        </FrameLayout>
-
-                        <!-- White -->
-                        <FrameLayout
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp">
-                            <View
-                                android:id="@+id/swatchWhiteRing"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@drawable/bg_link_unlinked"
-                                android:visibility="invisible" />
-                            <View
-                                android:id="@+id/swatchWhite"
-                                android:layout_width="26dp"
-                                android:layout_height="26dp"
-                                android:layout_gravity="center"
-                                android:background="@drawable/bg_link_linked" />
-                        </FrameLayout>
-
-                        <!-- Dark -->
-                        <FrameLayout
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp">
-                            <View
-                                android:id="@+id/swatchDarkRing"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@drawable/bg_link_unlinked"
-                                android:visibility="invisible" />
-                            <View
-                                android:id="@+id/swatchDark"
-                                android:layout_width="26dp"
-                                android:layout_height="26dp"
-                                android:layout_gravity="center"
-                                android:background="@drawable/bg_swatch_selected" />
-                        </FrameLayout>
-
-                        <!-- Gray -->
-                        <FrameLayout
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp">
-                            <View
-                                android:id="@+id/swatchGrayRing"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@drawable/bg_link_unlinked"
-                                android:visibility="invisible" />
-                            <View
-                                android:id="@+id/swatchGray"
-                                android:layout_width="26dp"
-                                android:layout_height="26dp"
-                                android:layout_gravity="center"
-                                android:background="@drawable/bg_swatch_selected" />
-                        </FrameLayout>
-
-                        <!-- Warm -->
-                        <FrameLayout
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp">
-                            <View
-                                android:id="@+id/swatchWarmRing"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@drawable/bg_link_unlinked"
-                                android:visibility="invisible" />
-                            <View
-                                android:id="@+id/swatchWarm"
-                                android:layout_width="26dp"
-                                android:layout_height="26dp"
-                                android:layout_gravity="center"
-                                android:background="@drawable/bg_swatch_selected" />
-                        </FrameLayout>
-
-                        <!-- Plus (open colour picker) -->
-                        <View
-                            android:id="@+id/swatchPlus"
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:background="@drawable/bg_swatch_plus" />
-
-                    </LinearLayout>
-                </HorizontalScrollView>
-
-                <!-- Colour field: swatch + "Цвет" label + editable hex -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/bg_input_field"
-                    android:paddingHorizontal="10dp"
-                    android:layout_marginBottom="12dp">
-
-                    <View
-                        android:id="@+id/activeSwatch"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="10dp"
-                        android:background="@drawable/bg_swatch_selected" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Цвет"
-                        android:textSize="14sp"
-                        android:textColor="@color/tMid"
-                        android:fontFamily="monospace" />
-
-                    <EditText
-                        android:id="@+id/hexInput"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@null"
-                        android:gravity="center_vertical|end"
-                        android:text="#FAFAFA"
-                        android:hint="#RRGGBB"
-                        android:textSize="14sp"
-                        android:textColor="@color/tHi"
-                        android:textColorHint="@color/tLo"
-                        android:fontFamily="monospace"
-                        android:inputType="textCapCharacters"
-                        android:maxLength="7"
-                        android:imeOptions="actionDone"
-                        android:importantForAutofill="no" />
-
-                </LinearLayout>
-
-                <!-- Donate link (opens external page; no permission needed) -->
-                <TextView
-                    android:id="@+id/donateButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="♥ Поддержать проект"
-                    android:textSize="12sp"
+                    android:text="Загрузить"
+                    android:textSize="13sp"
                     android:textColor="@color/tMid"
-                    android:fontFamily="monospace"
-                    android:gravity="center"
-                    android:paddingVertical="12dp"
-                    android:layout_marginTop="4dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:fontFamily="monospace" />
 
             </LinearLayout>
-        </ScrollView>
 
-        <!-- Bottom action bar: Save (Load joins it in portrait, 50/50) -->
+        </FrameLayout>
+
+        <!-- ─── Bottom sheet panel ──────────────────────────────────────────── -->
         <LinearLayout
-            android:id="@+id/bottomBar"
+            android:id="@+id/panelArea"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:background="@drawable/bg_bottom_sheet"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="14dp"
+            android:elevation="8dp"
+            android:visibility="gone">
 
-            <Button
-                android:id="@+id/saveButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="Сохранить"
-                android:textSize="14sp"
-                android:textColor="@color/canvas_bg"
-                android:textStyle="bold"
-                android:background="@drawable/bg_save_button"
-                android:enabled="false"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null" />
+            <!-- Drag handle — tap or swipe to expand/collapse -->
+            <LinearLayout
+                android:id="@+id/panelHandle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="11dp"
+                android:paddingBottom="14dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="5dp"
+                    android:background="@drawable/bg_grab_handle" />
+
+            </LinearLayout>
+
+            <!-- Scrollable controls -->
+            <ScrollView
+                android:id="@+id/controlsScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Section label -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ТОЛЩИНА"
+                        android:textSize="10sp"
+                        android:textColor="@color/tLo"
+                        android:fontFamily="monospace"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- Thickness pad (left) + vertical opacity slider (right) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/border_pad_height"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="14dp">
+
+                        <com.easycode.easyframe.BorderPadView
+                            android:id="@+id/borderPad"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="10dp" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <TextView
+                                android:id="@+id/opacityValueText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="100%"
+                                android:textSize="10sp"
+                                android:textColor="@color/tMid"
+                                android:fontFamily="monospace"
+                                android:layout_marginBottom="4dp" />
+
+                            <com.easycode.easyframe.OpacitySliderView
+                                android:id="@+id/opacitySlider"
+                                android:layout_width="30dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="прозр."
+                                android:textSize="9sp"
+                                android:textColor="@color/tLo"
+                                android:fontFamily="monospace"
+                                android:layout_marginTop="4dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Hairline divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:background="@color/hairline"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Colour tools + presets in one scrollable row -->
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="none"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <Button
+                                android:id="@+id/btnAuto"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/bg_tool_circle"
+                                android:foreground="@drawable/ic_wand"
+                                android:foregroundGravity="center"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:stateListAnimator="@null"
+                                android:layout_marginEnd="8dp" />
+
+                            <Button
+                                android:id="@+id/btnEyedropper"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/bg_tool_circle"
+                                android:foreground="@drawable/ic_pipette"
+                                android:foregroundGravity="center"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:stateListAnimator="@null"
+                                android:layout_marginEnd="8dp" />
+
+                            <Button
+                                android:id="@+id/btnColorWheel"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:text=""
+                                android:background="@drawable/bg_tool_circle"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:paddingHorizontal="0dp"
+                                android:paddingVertical="0dp"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:stateListAnimator="@null"
+                                android:layout_marginEnd="14dp" />
+
+                            <!-- Selected/custom colour swatch -->
+                            <FrameLayout
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:layout_marginEnd="6dp">
+                                <View
+                                    android:id="@+id/swatchSelectedRing"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/bg_link_unlinked"
+                                    android:visibility="visible" />
+                                <View
+                                    android:id="@+id/swatchSelected"
+                                    android:layout_width="26dp"
+                                    android:layout_height="26dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/bg_swatch_selected" />
+                            </FrameLayout>
+
+                            <!-- White -->
+                            <FrameLayout
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:layout_marginEnd="6dp">
+                                <View
+                                    android:id="@+id/swatchWhiteRing"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/bg_link_unlinked"
+                                    android:visibility="invisible" />
+                                <View
+                                    android:id="@+id/swatchWhite"
+                                    android:layout_width="26dp"
+                                    android:layout_height="26dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/bg_link_linked" />
+                            </FrameLayout>
+
+                            <!-- Dark -->
+                            <FrameLayout
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:layout_marginEnd="6dp">
+                                <View
+                                    android:id="@+id/swatchDarkRing"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/bg_link_unlinked"
+                                    android:visibility="invisible" />
+                                <View
+                                    android:id="@+id/swatchDark"
+                                    android:layout_width="26dp"
+                                    android:layout_height="26dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/bg_swatch_selected" />
+                            </FrameLayout>
+
+                            <!-- Gray -->
+                            <FrameLayout
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:layout_marginEnd="6dp">
+                                <View
+                                    android:id="@+id/swatchGrayRing"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/bg_link_unlinked"
+                                    android:visibility="invisible" />
+                                <View
+                                    android:id="@+id/swatchGray"
+                                    android:layout_width="26dp"
+                                    android:layout_height="26dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/bg_swatch_selected" />
+                            </FrameLayout>
+
+                            <!-- Warm -->
+                            <FrameLayout
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:layout_marginEnd="6dp">
+                                <View
+                                    android:id="@+id/swatchWarmRing"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/bg_link_unlinked"
+                                    android:visibility="invisible" />
+                                <View
+                                    android:id="@+id/swatchWarm"
+                                    android:layout_width="26dp"
+                                    android:layout_height="26dp"
+                                    android:layout_gravity="center"
+                                    android:background="@drawable/bg_swatch_selected" />
+                            </FrameLayout>
+
+                            <!-- Plus (open colour picker) -->
+                            <View
+                                android:id="@+id/swatchPlus"
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:background="@drawable/bg_swatch_plus" />
+
+                        </LinearLayout>
+                    </HorizontalScrollView>
+
+                    <!-- Colour field: swatch + "Цвет" label + editable hex -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_input_field"
+                        android:paddingHorizontal="10dp"
+                        android:layout_marginBottom="12dp">
+
+                        <View
+                            android:id="@+id/activeSwatch"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/bg_swatch_selected" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Цвет"
+                            android:textSize="14sp"
+                            android:textColor="@color/tMid"
+                            android:fontFamily="monospace" />
+
+                        <EditText
+                            android:id="@+id/hexInput"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:gravity="center_vertical|end"
+                            android:text="#FAFAFA"
+                            android:hint="#RRGGBB"
+                            android:textSize="14sp"
+                            android:textColor="@color/tHi"
+                            android:textColorHint="@color/tLo"
+                            android:fontFamily="monospace"
+                            android:inputType="textCapCharacters"
+                            android:maxLength="7"
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no" />
+
+                    </LinearLayout>
+
+                    <!-- Donate link -->
+                    <TextView
+                        android:id="@+id/donateButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="♥ Поддержать проект"
+                        android:textSize="12sp"
+                        android:textColor="@color/tMid"
+                        android:fontFamily="monospace"
+                        android:gravity="center"
+                        android:paddingVertical="12dp"
+                        android:layout_marginTop="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                </LinearLayout>
+            </ScrollView>
 
         </LinearLayout>
 
