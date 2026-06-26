@@ -617,6 +617,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 } catch (e: Exception) { false }
             }
+            if (ok) saveButton.isEnabled = false
             showToast(if (ok) "Сохранено в Галерею → Framing" else "Не удалось сохранить")
         }
     }
