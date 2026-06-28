@@ -96,7 +96,7 @@ class EyedropperOverlay @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         // Hint text near bottom
         canvas.drawText(
-            "Двигайте палец по фото, чтобы взять цвет пикселя",
+            context.getString(R.string.eyedropper_hint),
             width / 2f, height - 14f * dp, hintPaint
         )
 

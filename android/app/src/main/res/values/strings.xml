@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">EasyFrame</string>
+
+    <!-- Toolbar / main controls -->
+    <string name="action_load">Load</string>
+    <string name="action_save">Save</string>
+    <string name="cd_preview">Preview</string>
+    <string name="label_thickness">THICKNESS</string>
+    <string name="label_opacity">opac.</string>
+    <string name="label_color">Color</string>
+    <string name="hint_hex">#RRGGBB</string>
+    <string name="support_project">♥ Support the project</string>
+
+    <!-- Color picker dialog -->
+    <string name="picker_frame_color">Frame color</string>
+    <string name="picker_from_photo">FROM PHOTO</string>
+
+    <!-- Eyedropper -->
+    <string name="eyedropper_hint">Drag your finger over the photo to pick a pixel color</string>
+
+    <!-- Toasts -->
+    <string name="toast_load_failed">Couldn\'t load the image</string>
+    <string name="toast_too_large">Image is too large for such a border</string>
+    <string name="toast_no_photo">Load a photo first</string>
+    <string name="toast_permission_denied">Permission denied</string>
+    <string name="toast_saved">Saved to Gallery → Framing</string>
+    <string name="toast_save_failed">Couldn\'t save</string>
+    <string name="toast_open_page_failed">Couldn\'t open the page</string>
 </resources>

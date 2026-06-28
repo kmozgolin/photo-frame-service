@@ -125,6 +125,11 @@ class MainActivity : AppCompatActivity() {
     private val colorGray = Color.parseColor("#8C8C92")
     private val colorWarm = Color.parseColor("#CAA46F")
 
+    // Preview backdrop: normally canvas_bg, but switched to a neutral grey when the frame
+    // colour is so close to canvas_bg that the frame edge would be invisible against it.
+    private val previewBgDefault by lazy { ContextCompat.getColor(this, R.color.canvas_bg) }
+    private val previewBgContrast = Color.parseColor("#6E6E78")
+
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> uri?.let { loadSourceImage(it) } }
@@ -320,6 +325,21 @@ class MainActivity : AppCompatActivity() {
         else        -> customColor
     }
 
+    // Squared RGB distance — cheap perceptual-enough proximity check.
+    private fun colorDistance(a: Int, b: Int): Int {
+        val dr = Color.red(a) - Color.red(b)
+        val dg = Color.green(a) - Color.green(b)
+        val db = Color.blue(a) - Color.blue(b)
+        return dr * dr + dg * dg + db * db
+    }
+
+    // If the frame colour nearly matches the default dark backdrop, the frame would blend
+    // into the letterbox around the photo — swap in a neutral grey backdrop so it stays visible.
+    private fun updatePreviewBackdrop() {
+        val blends = colorDistance(resolveFrameColor(), previewBgDefault) < 6000  // ~45/channel
+        previewArea.setBackgroundColor(if (blends) previewBgContrast else previewBgDefault)
+    }
+
     private fun applyAlpha(color: Int, opacity: Float): Int {
         val a = (opacity * 255f).roundToInt().coerceIn(0, 255)
         return Color.argb(a, Color.red(color), Color.green(color), Color.blue(color))
@@ -346,7 +366,7 @@ class MainActivity : AppCompatActivity() {
                     rotated
                 } catch (e: Exception) { null }
             }
-            if (result == null) { showToast("Не удалось загрузить изображение"); return@launch }
+            if (result == null) { showToast(getString(R.string.toast_load_failed)); return@launch }
             sourceBitmap?.recycle()
             sourceBitmap = result
             btnRotate.visibility = View.VISIBLE
@@ -403,10 +423,12 @@ class MainActivity : AppCompatActivity() {
             saveButton.isEnabled = false
             emptyStateView.visibility = View.VISIBLE
             panelArea.visibility = View.GONE   // no photo → no controls, just the load prompt
+            previewArea.setBackgroundColor(previewBgDefault)
             return
         }
         emptyStateView.visibility = View.GONE
         panelArea.visibility = View.VISIBLE
+        updatePreviewBackdrop()
         val borderH    = borderSides       // width padding (left/right)
         val borderV    = borderTopBottom   // height padding (top/bottom)
         val frameColor = applyAlpha(resolveFrameColor(), frameOpacity)
@@ -425,7 +447,7 @@ class MainActivity : AppCompatActivity() {
                     bmp
                 } catch (e: OutOfMemoryError) { null }
             }
-            if (bitmap == null) { showToast("Изображение слишком большое для такой рамки"); return@launch }
+            if (bitmap == null) { showToast(getString(R.string.toast_too_large)); return@launch }
             val old = previewBitmap
             if (keepZoom) previewImage.updateFrameBitmap(bitmap) else previewImage.setImageBitmap(bitmap)
             previewBitmap = bitmap
@@ -562,7 +584,7 @@ class MainActivity : AppCompatActivity() {
     // ── Save ──────────────────────────────────────────────────────────────────
 
     private fun savePreviewImage() {
-        val bitmap = previewBitmap ?: run { showToast("Сначала загрузите фото"); return }
+        val bitmap = previewBitmap ?: run { showToast(getString(R.string.toast_no_photo)); return }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -581,7 +603,7 @@ class MainActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 pendingSaveBitmap?.let { doSaveBitmap(it) }
             } else {
-                showToast("Разрешение не предоставлено")
+                showToast(getString(R.string.toast_permission_denied))
             }
             pendingSaveBitmap = null
         }
@@ -628,7 +650,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) { false }
             }
             if (ok) saveButton.isEnabled = false
-            showToast(if (ok) "Сохранено в Галерею → Framing" else "Не удалось сохранить")
+            showToast(getString(if (ok) R.string.toast_saved else R.string.toast_save_failed))
         }
     }
 
@@ -803,7 +825,7 @@ class MainActivity : AppCompatActivity() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(DONATION_URL)))
         } catch (e: ActivityNotFoundException) {
-            showToast("Не удалось открыть страницу")
+            showToast(getString(R.string.toast_open_page_failed))
         }
     }
 

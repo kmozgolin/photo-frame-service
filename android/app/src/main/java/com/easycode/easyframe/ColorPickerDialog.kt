@@ -64,7 +64,7 @@ class ColorPickerDialog(
             }
         }
         titleRow.addView(TextView(context).apply {
-            text = "Цвет рамки"
+            text = context.getString(R.string.picker_frame_color)
             textSize = 15f
             setTextColor(Color.argb(245, 255, 255, 255))
             typeface = Typeface.DEFAULT_BOLD
@@ -181,9 +181,9 @@ class ColorPickerDialog(
                 setTextColor(Color.argb(153, 255, 255, 255))
                 layoutParams = LinearLayout.LayoutParams(lp_ww, lp_ww).also { it.marginEnd = (6 * dp).toInt() }
             })
-            // "ПО ФОТО" label
+            // "FROM PHOTO" label
             photoRow.addView(TextView(context).apply {
-                text = "ПО ФОТО"
+                text = context.getString(R.string.picker_from_photo)
                 textSize = 9f
                 letterSpacing = 0.1f
                 typeface = Typeface.MONOSPACE

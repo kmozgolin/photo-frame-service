@@ -22,7 +22,7 @@
             android:id="@+id/loadButton"
             android:layout_width="wrap_content"
             android:layout_height="38dp"
-            android:text="Загрузить"
+            android:text="@string/action_load"
             android:textSize="13sp"
             android:textColor="@color/tMid"
             android:background="@drawable/bg_load_button"
@@ -61,7 +61,7 @@
             android:id="@+id/saveButton"
             android:layout_width="wrap_content"
             android:layout_height="38dp"
-            android:text="Сохранить"
+            android:text="@string/action_save"
             android:textSize="13sp"
             android:textColor="@color/canvas_bg"
             android:textStyle="bold"
@@ -97,7 +97,7 @@
                 android:id="@+id/previewImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="Превью" />
+                android:contentDescription="@string/cd_preview" />
 
             <com.easycode.easyframe.EyedropperOverlay
                 android:id="@+id/eyedropperOverlay"
@@ -122,13 +122,13 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:src="@drawable/ic_download"
-                    android:contentDescription="Загрузить"
+                    android:contentDescription="@string/action_load"
                     android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Загрузить"
+                    android:text="@string/action_load"
                     android:textSize="13sp"
                     android:textColor="@color/tMid"
                     android:fontFamily="monospace" />
@@ -185,7 +185,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="ТОЛЩИНА"
+                        android:text="@string/label_thickness"
                         android:textSize="10sp"
                         android:textColor="@color/tLo"
                         android:fontFamily="monospace"
@@ -231,7 +231,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="прозр."
+                                android:text="@string/label_opacity"
                                 android:textSize="9sp"
                                 android:textColor="@color/tLo"
                                 android:fontFamily="monospace"
@@ -429,7 +429,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Цвет"
+                            android:text="@string/label_color"
                             android:textSize="14sp"
                             android:textColor="@color/tMid"
                             android:fontFamily="monospace" />
@@ -442,7 +442,7 @@
                             android:background="@null"
                             android:gravity="center_vertical|end"
                             android:text="#FAFAFA"
-                            android:hint="#RRGGBB"
+                            android:hint="@string/hint_hex"
                             android:textSize="14sp"
                             android:textColor="@color/tHi"
                             android:textColorHint="@color/tLo"
@@ -459,7 +459,7 @@
                         android:id="@+id/donateButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="♥ Поддержать проект"
+                        android:text="@string/support_project"
                         android:textSize="12sp"
                         android:textColor="@color/tMid"
                         android:fontFamily="monospace"
