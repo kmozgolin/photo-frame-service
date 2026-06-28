@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     // Adaptive layout: toolbar always on top; contentArea flips orientation for landscape.
     private lateinit var rootLayout: LinearLayout
+    private lateinit var toolbar: LinearLayout
     private lateinit var contentArea: LinearLayout
     private lateinit var previewArea: FrameLayout
     private lateinit var panelArea: LinearLayout
@@ -135,6 +136,7 @@ class MainActivity : AppCompatActivity() {
         btnRotate         = findViewById(R.id.btnRotate)
 
         rootLayout        = findViewById(R.id.rootLayout)
+        toolbar           = findViewById(R.id.toolbar)
         contentArea       = findViewById(R.id.contentArea)
         previewArea       = findViewById(R.id.previewArea)
         panelArea         = findViewById(R.id.panelArea)
@@ -728,6 +730,15 @@ class MainActivity : AppCompatActivity() {
             controlsScroll.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
         }
+        // In landscape: toolbar is transparent and right-padded to align buttons over the photo.
+        // In portrait: opaque background, normal padding.
+        val d = resources.displayMetrics.density
+        val endPad = if (portrait) (12 * d).toInt()
+                     else (286 * d).toInt() + (12 * d).toInt()
+        if (portrait) toolbar.setBackgroundColor(resources.getColor(R.color.canvas_bg, null))
+        else toolbar.background = null
+        toolbar.setPaddingRelative(
+            toolbar.paddingStart, toolbar.paddingTop, endPad, toolbar.paddingBottom)
     }
 
     override fun onDestroy() {
