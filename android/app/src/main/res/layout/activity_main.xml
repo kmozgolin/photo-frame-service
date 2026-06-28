@@ -162,6 +162,7 @@
                 android:focusable="true">
 
                 <View
+                    android:id="@+id/grabBar"
                     android:layout_width="40dp"
                     android:layout_height="5dp"
                     android:background="@drawable/bg_grab_handle" />

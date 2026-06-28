@@ -18,6 +18,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -46,18 +47,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var eyedropperOverlay: EyedropperOverlay
     private lateinit var btnRotate: Button
 
-    // Adaptive layout: toolbar always on top; contentArea flips orientation for landscape.
-    private lateinit var rootLayout: LinearLayout
+    // Adaptive layout: toolbar floats over the photo; contentArea flips orientation,
+    // the panel is a collapsible sheet (bottom in portrait, side drawer in landscape).
     private lateinit var toolbar: LinearLayout
     private lateinit var contentArea: LinearLayout
     private lateinit var previewArea: FrameLayout
     private lateinit var panelArea: LinearLayout
     private lateinit var panelHandle: View
+    private lateinit var grabBar: View
     private lateinit var controlsScroll: View
     private var panelExpanded = true
     private var isAnimating = false
 
-    // Border thickness (2D pad + numeric fields)
+    // Border thickness — controlled by the 2D pad
     private lateinit var borderPad: BorderPadView
 
     // Color
@@ -135,12 +137,12 @@ class MainActivity : AppCompatActivity() {
         eyedropperOverlay = findViewById(R.id.eyedropperOverlay)
         btnRotate         = findViewById(R.id.btnRotate)
 
-        rootLayout        = findViewById(R.id.rootLayout)
         toolbar           = findViewById(R.id.toolbar)
         contentArea       = findViewById(R.id.contentArea)
         previewArea       = findViewById(R.id.previewArea)
         panelArea         = findViewById(R.id.panelArea)
         panelHandle       = findViewById(R.id.panelHandle)
+        grabBar           = findViewById(R.id.grabBar)
         controlsScroll    = findViewById(R.id.controlsScroll)
         setupPanelHandleTouch()
 
@@ -222,18 +224,7 @@ class MainActivity : AppCompatActivity() {
         donateButton.setOnClickListener    { openDonationPage() }
 
         // Auto (magic wand)
-        btnAuto.setOnClickListener {
-            val src = sourceBitmap ?: return@setOnClickListener
-            autoColorJob?.cancel()
-            autoColorJob = lifecycleScope.launch {
-                val color = withContext(Dispatchers.Default) { computeAutoColor(src) }
-                customColor = color
-                colorMode = COLOR_AUTO
-                updateSwatchUI()
-                updateColorInfo()
-                renderPreview(keepZoom = true)
-            }
-        }
+        btnAuto.setOnClickListener { applyAutoColor(keepZoom = true) }
 
         btnEyedropper.setOnClickListener { showEyedropper() }
         btnColorWheel.setOnClickListener { openColorPicker() }
@@ -347,19 +338,23 @@ class MainActivity : AppCompatActivity() {
             sourceBitmap = result
             btnRotate.visibility = View.VISIBLE
             renderPreview(keepZoom = false)
-            // Auto-color on load
-            autoColorJob?.cancel()
-            autoColorJob = lifecycleScope.launch autoColor@{
-                val src = sourceBitmap ?: return@autoColor
-                val color = withContext(Dispatchers.Default) { computeAutoColor(src) }
-                if (sourceBitmap === src) {
-                    customColor = color
-                    colorMode = COLOR_AUTO
-                    updateSwatchUI()
-                    updateColorInfo()
-                    renderPreview(keepZoom = false)
-                }
-            }
+            applyAutoColor(keepZoom = false)   // auto-pick a frame colour from the new photo
+        }
+    }
+
+    // Picks a frame colour from the current photo on a background thread, then applies it.
+    // The staleness guard drops the result if the photo changed while we were computing.
+    private fun applyAutoColor(keepZoom: Boolean) {
+        val src = sourceBitmap ?: return
+        autoColorJob?.cancel()
+        autoColorJob = lifecycleScope.launch {
+            val color = withContext(Dispatchers.Default) { computeAutoColor(src) }
+            if (sourceBitmap !== src) return@launch
+            customColor = color
+            colorMode = COLOR_AUTO
+            updateSwatchUI()
+            updateColorInfo()
+            renderPreview(keepZoom = keepZoom)
         }
     }
 
@@ -636,24 +631,34 @@ class MainActivity : AppCompatActivity() {
         if (panelExpanded) collapseSheet() else expandSheet()
     }
 
+    private fun isPortrait() =
+        resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    // Slides controls in. Portrait → sheet drops from the bottom (translationY);
+    // landscape → side panel slides in from the right (translationX). Same logic, different axis.
     private fun expandSheet() {
         if (panelExpanded || isAnimating) return
         panelExpanded = true
         isAnimating = true
+        val portrait = isPortrait()
         // Push panel off screen before revealing controls so layout recalc happens hidden.
-        panelArea.translationY = 2000f
+        if (portrait) panelArea.translationY = 3000f else panelArea.translationX = 3000f
         controlsScroll.visibility = View.VISIBLE
         controlsScroll.post {
-            val h = controlsScroll.height.toFloat()
-            panelArea.translationY = h
-            panelArea.animate()
-                .translationY(0f)
-                .setDuration(250)
-                .setInterpolator(DecelerateInterpolator())
+            // A rotation in the gap before this runs clears isAnimating via layoutPanel — bail then.
+            if (!isAnimating) return@post
+            val anim = panelArea.animate().setDuration(250).setInterpolator(DecelerateInterpolator())
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) { isAnimating = false }
                 })
-                .start()
+            if (portrait) {
+                panelArea.translationY = controlsScroll.height.toFloat()
+                anim.translationY(0f)
+            } else {
+                panelArea.translationX = controlsScroll.width.toFloat()
+                anim.translationX(0f)
+            }
+            anim.start()
         }
     }
 
@@ -661,36 +666,38 @@ class MainActivity : AppCompatActivity() {
         if (!panelExpanded || isAnimating) return
         panelExpanded = false
         isAnimating = true
-        val h = controlsScroll.height.toFloat()
-        panelArea.animate()
-            .translationY(h)
-            .setDuration(250)
-            .setInterpolator(DecelerateInterpolator())
+        val portrait = isPortrait()
+        val anim = panelArea.animate().setDuration(250).setInterpolator(DecelerateInterpolator())
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     controlsScroll.visibility = View.GONE
                     panelArea.translationY = 0f
+                    panelArea.translationX = 0f
                     isAnimating = false
                 }
             })
-            .start()
+        if (portrait) anim.translationY(controlsScroll.height.toFloat())
+        else          anim.translationX(controlsScroll.width.toFloat())
+        anim.start()
     }
 
     private fun setupPanelHandleTouch() {
         val density = resources.displayMetrics.density
         val tapThreshold = 10 * density
         val swipeThreshold = 20 * density
+        var startX = 0f
         var startY = 0f
         panelHandle.setOnTouchListener { _, event ->
             when (event.action) {
-                MotionEvent.ACTION_DOWN -> { startY = event.rawY; true }
+                MotionEvent.ACTION_DOWN -> { startX = event.rawX; startY = event.rawY; true }
                 MotionEvent.ACTION_MOVE -> true
                 MotionEvent.ACTION_UP -> {
-                    val dy = event.rawY - startY
+                    // Portrait: vertical swipe (up=open). Landscape: horizontal swipe (left=open).
+                    val delta = if (isPortrait()) event.rawY - startY else event.rawX - startX
                     when {
-                        dy < -swipeThreshold && !panelExpanded -> expandSheet()
-                        dy > swipeThreshold && panelExpanded   -> collapseSheet()
-                        Math.abs(dy) < tapThreshold            -> togglePanel()
+                        delta < -swipeThreshold && !panelExpanded -> expandSheet()
+                        delta > swipeThreshold && panelExpanded   -> collapseSheet()
+                        Math.abs(delta) < tapThreshold            -> togglePanel()
                     }
                     true
                 }
@@ -699,46 +706,76 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Arranges preview + panel by orientation.
-    // Portrait: contentArea vertical, panel is a bottom sheet with grab handle.
-    // Landscape: contentArea horizontal, panel is a side column (no collapse).
+    // Arranges preview + panel by orientation. Toolbar is always a transparent overlay
+    // over the photo. The control panel collapses with the same logic in both orientations:
+    // portrait → bottom sheet (handle on top, slides down); landscape → side drawer on the
+    // right (handle on left, slides right).
     private fun layoutPanel() {
         val config = resources.configuration
         val portrait = config.orientation == Configuration.ORIENTATION_PORTRAIT
+        val d = resources.displayMetrics.density
 
-        panelHandle.visibility = if (portrait) View.VISIBLE else View.GONE
+        panelHandle.visibility = View.VISIBLE
+        // Cancel any in-flight collapse/expand and clear its leftover state before reorienting,
+        // so a rotation mid-animation can't leave the panel half-slid or isAnimating stuck.
+        panelArea.animate().cancel()
+        isAnimating = false
+        panelArea.translationX = 0f
+        panelArea.translationY = 0f
+
+        // Toolbar is always a transparent overlay over the photo (both orientations).
+        // Added last in previewArea so the buttons draw on top (FrameLayout z-order).
+        if (toolbar.parent !== previewArea) {
+            (toolbar.parent as? ViewGroup)?.removeView(toolbar)
+            toolbar.background = null
+            toolbar.setPaddingRelative(
+                (12*d).toInt(), (8*d).toInt(), (12*d).toInt(), (10*d).toInt())
+            previewArea.addView(toolbar, FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP))
+        }
 
         if (portrait) {
             contentArea.orientation = LinearLayout.VERTICAL
+            panelArea.orientation = LinearLayout.VERTICAL
+            panelArea.background = ContextCompat.getDrawable(this, R.drawable.bg_bottom_sheet)
+            panelArea.setPaddingRelative((14*d).toInt(), 0, (14*d).toInt(), (14*d).toInt())
+
+            // Handle: horizontal bar across the top.
+            panelHandle.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            panelHandle.setPaddingRelative(0, (11*d).toInt(), 0, (14*d).toInt())
+            grabBar.layoutParams = LinearLayout.LayoutParams((40*d).toInt(), (5*d).toInt())
+
             previewArea.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
             panelArea.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             controlsScroll.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            if (!panelExpanded) controlsScroll.visibility = View.GONE
         } else {
-            // Landscape/tablet: side panel, always expanded
-            val panelW = (286 * resources.displayMetrics.density).toInt()
             contentArea.orientation = LinearLayout.HORIZONTAL
+            panelArea.orientation = LinearLayout.HORIZONTAL
+            panelArea.background = ContextCompat.getDrawable(this, R.drawable.bg_side_sheet)
+            // 8dp top so "ТОЛЩИНА" clears the rounded corner.
+            panelArea.setPaddingRelative(0, (8*d).toInt(), (14*d).toInt(), (14*d).toInt())
+
+            // Handle: vertical bar down the left edge.
+            panelHandle.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            panelHandle.setPaddingRelative((11*d).toInt(), 0, (13*d).toInt(), 0)
+            grabBar.layoutParams = LinearLayout.LayoutParams((5*d).toInt(), (40*d).toInt())
+
             previewArea.layoutParams = LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+            // WRAP width so the panel shrinks to just the handle when collapsed.
             panelArea.layoutParams = LinearLayout.LayoutParams(
-                panelW, LinearLayout.LayoutParams.MATCH_PARENT)
-            panelExpanded = true
-            controlsScroll.visibility = View.VISIBLE
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
             controlsScroll.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                (286*d).toInt(), LinearLayout.LayoutParams.MATCH_PARENT)
         }
-        // In landscape: toolbar is transparent and right-padded to align buttons over the photo.
-        // In portrait: opaque background, normal padding.
-        val d = resources.displayMetrics.density
-        val endPad = if (portrait) (12 * d).toInt()
-                     else (286 * d).toInt() + (12 * d).toInt()
-        if (portrait) toolbar.setBackgroundColor(resources.getColor(R.color.canvas_bg, null))
-        else toolbar.background = null
-        toolbar.setPaddingRelative(
-            toolbar.paddingStart, toolbar.paddingTop, endPad, toolbar.paddingBottom)
+        controlsScroll.visibility = if (panelExpanded) View.VISIBLE else View.GONE
     }
 
     override fun onDestroy() {
