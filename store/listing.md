@@ -59,7 +59,7 @@ Free. If the app helps you, you can support the developer.
 
 ## Other listing fields
 - Category: Photography (or Tools)
-- Email: kmozgolin@gmail.com
+- Email: easycodefoundation1@gmail.com
 - Privacy policy: https://kmozgolin.github.io/photo-frame-service/privacy-policy.html
 - Ads: No
 - In-app purchases: No

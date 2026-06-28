@@ -65,7 +65,7 @@ Free. If the app helps you, you can support the developer.
 |---|---|
 | App category | Photography |
 | Tags | photo, frame, border, passe-partout (по желанию) |
-| Store listing contact — email | `kmozgolin@gmail.com` |
+| Store listing contact — email | `easycodefoundation1@gmail.com` |
 | Store listing contact — phone | (по желанию, можно пусто) |
 | Store listing contact — website | `https://github.com/kmozgolin/photo-frame-service` (по желанию) |
 | External marketing | Off (нет рекламных кампаний) |
@@ -86,7 +86,7 @@ https://kmozgolin.github.io/photo-frame-service/privacy-policy.html
 - **No, my app does not contain ads.**
 
 ### Content rating
-- Email: `kmozgolin@gmail.com`
+- Email: `easycodefoundation1@gmail.com`
 - Category: **Utility, Productivity, Communication, or Other**
 - Все вопросы анкеты → **No / None** (см. раздел 5 ниже).
 - Ожидаемый рейтинг: **Everyone / PEGI 3**.
